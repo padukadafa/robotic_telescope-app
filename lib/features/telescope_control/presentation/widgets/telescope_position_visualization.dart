@@ -82,8 +82,8 @@ class TelescopePositionVisualization extends StatelessWidget {
 
               // Elevation indicator
               Positioned(
-                bottom: 60,
-                right: 60,
+                top: 8,
+                right: 8,
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
