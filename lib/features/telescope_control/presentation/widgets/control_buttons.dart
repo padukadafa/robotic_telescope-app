@@ -41,6 +41,7 @@ class ControlButtons extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -73,6 +74,8 @@ class ControlButtons extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
