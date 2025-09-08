@@ -102,15 +102,59 @@ class MonitoringScreen extends StatelessWidget {
                           [
                             _buildDetailRow(
                               context,
-                              'Network',
+                              'WiFi Network',
                               connectionProvider.isConnected ? connectionProvider.connectedNetwork : 'None',
                               Icons.router,
+                            ),
+                            _buildDetailRow(
+                              context,
+                              'Telescope WebSocket',
+                              connectionProvider.telescopeConnected ? 'Connected (${connectionProvider.telescopeIp})' : 'Disconnected',
+                              connectionProvider.telescopeConnected ? Icons.wifi : Icons.wifi_off,
+                              color: connectionProvider.telescopeConnected ? Colors.green : Colors.red,
                             ),
                             _buildDetailRow(
                               context,
                               'Signal Strength',
                               connectionProvider.isConnected ? 'Strong' : 'N/A',
                               Icons.signal_wifi_4_bar,
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Stepper Motor Status
+                        _buildStatusCard(
+                          context,
+                          'Stepper Motors',
+                          Icons.settings,
+                          'NEMA 17 Control System',
+                          Colors.blue,
+                          [
+                            _buildDetailRow(
+                              context,
+                              'Motor Type',
+                              'NEMA 17',
+                              Icons.electrical_services,
+                            ),
+                            _buildDetailRow(
+                              context,
+                              'Steps/Revolution',
+                              '200 steps',
+                              Icons.rotate_right,
+                            ),
+                            _buildDetailRow(
+                              context,
+                              'Microstepping',
+                              '16x',
+                              Icons.precision_manufacturing,
+                            ),
+                            _buildDetailRow(
+                              context,
+                              'Control Method',
+                              'WebSocket Commands',
+                              Icons.cloud_sync,
                             ),
                           ],
                         ),
@@ -207,15 +251,21 @@ class MonitoringScreen extends StatelessWidget {
                             _buildDetailRow(
                               context,
                               'Current Action',
-                              telescopeProvider.isMoving ? 'Moving to target' : 'Idle',
+                              telescopeProvider.status,
                               telescopeProvider.isMoving ? Icons.directions_run : Icons.stop,
+                            ),
+                            _buildDetailRow(
+                              context,
+                              'Control Method',
+                              'Stepper Motor Commands',
+                              Icons.precision_manufacturing,
                             ),
                             if (telescopeProvider.isMoving)
                               _buildDetailRow(
                                 context,
-                                'Estimated Time',
-                                '~2 seconds',
-                                Icons.timer,
+                                'Command Type',
+                                'WebSocket Transmission',
+                                Icons.cloud_upload,
                               ),
                           ],
                         ),
@@ -232,21 +282,28 @@ class MonitoringScreen extends StatelessWidget {
                           [
                             _buildDetailRow(
                               context,
-                              'Telescope',
-                              'Online',
-                              Icons.check_circle,
+                              'Telescope Controller',
+                              telescopeProvider.isConnected ? 'Online' : 'Offline',
+                              telescopeProvider.isConnected ? Icons.check_circle : Icons.error,
+                              color: telescopeProvider.isConnected ? Colors.green : Colors.red,
+                            ),
+                            _buildDetailRow(
+                              context,
+                              'WebSocket Connection',
+                              connectionProvider.telescopeConnected ? 'Connected' : 'Disconnected',
+                              connectionProvider.telescopeConnected ? Icons.wifi : Icons.wifi_off,
+                              color: connectionProvider.telescopeConnected ? Colors.green : Colors.red,
+                            ),
+                            _buildDetailRow(
+                              context,
+                              'Stepper Motors',
+                              'Ready',
+                              Icons.electrical_services,
                               color: Colors.green,
                             ),
                             _buildDetailRow(
                               context,
-                              'Connection',
-                              connectionProvider.isConnected ? 'Stable' : 'Disconnected',
-                              connectionProvider.isConnected ? Icons.wifi : Icons.wifi_off,
-                              color: connectionProvider.isConnected ? Colors.green : Colors.red,
-                            ),
-                            _buildDetailRow(
-                              context,
-                              'Power',
+                              'Power Status',
                               'Normal',
                               Icons.battery_full,
                               color: Colors.green,

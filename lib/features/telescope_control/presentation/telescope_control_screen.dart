@@ -139,7 +139,7 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen>
                               ],
                             ),
                             child: ElevatedButton(
-                              onPressed: telescopeProvider.isMoving
+                              onPressed: telescopeProvider.isMoving || !telescopeProvider.isConnected
                                 ? null
                                 : () {
                                     _moveAnimationController.forward().then((_) =>
@@ -180,6 +180,44 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen>
                         );
                       },
                     ),
+
+                  // Connection Status Banner
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: telescopeProvider.isConnected
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: telescopeProvider.isConnected
+                          ? Colors.green.withOpacity(0.3)
+                          : Colors.red.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          telescopeProvider.isConnected ? Icons.wifi : Icons.wifi_off,
+                          color: telescopeProvider.isConnected ? Colors.green : Colors.red,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          telescopeProvider.isConnected
+                            ? 'Connected to Telescope'
+                            : 'Not Connected to Telescope',
+                          style: TextStyle(
+                            color: telescopeProvider.isConnected ? Colors.green : Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
                   const SizedBox(height: 32),
 
@@ -310,7 +348,7 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen>
                             _buildControlButton(
                               context,
                               Icons.arrow_upward,
-                              telescopeProvider.slewUp,
+                              telescopeProvider.isConnected ? () => telescopeProvider.slewUp(steps: 50) : () {},
                               Colors.green,
                             ),
                           ],
@@ -321,14 +359,14 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen>
                             _buildControlButton(
                               context,
                               Icons.arrow_back,
-                              telescopeProvider.slewLeft,
+                              telescopeProvider.isConnected ? () => telescopeProvider.slewLeft(steps: 50) : () {},
                               Colors.orange,
                             ),
                             const SizedBox(width: 32),
                             _buildControlButton(
                               context,
                               Icons.stop,
-                              telescopeProvider.stop,
+                              telescopeProvider.isConnected ? telescopeProvider.stop : () {},
                               Colors.red,
                               size: 60,
                             ),
@@ -336,7 +374,7 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen>
                             _buildControlButton(
                               context,
                               Icons.arrow_forward,
-                              telescopeProvider.slewRight,
+                              telescopeProvider.isConnected ? () => telescopeProvider.slewRight(steps: 50) : () {},
                               Colors.orange,
                             ),
                           ],
@@ -347,7 +385,7 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen>
                             _buildControlButton(
                               context,
                               Icons.arrow_downward,
-                              telescopeProvider.slewDown,
+                              telescopeProvider.isConnected ? () => telescopeProvider.slewDown(steps: 50) : () {},
                               Colors.green,
                             ),
                           ],
@@ -465,32 +503,39 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen>
   }
 
   Widget _buildControlButton(BuildContext context, IconData icon, VoidCallback onPressed, Color color, {double size = 50}) {
-    return GestureDetector(
-      onTapDown: (_) {},
-      onTapUp: (_) {},
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: [color.withOpacity(0.8), color],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 8,
-              spreadRadius: 2,
+    return Consumer<TelescopeProvider>(
+      builder: (context, telescopeProvider, child) {
+        final isEnabled = telescopeProvider.isConnected && onPressed != (() {});
+        return GestureDetector(
+          onTapDown: (_) {},
+          onTapUp: (_) {},
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: isEnabled
+                  ? [color.withOpacity(0.8), color]
+                  : [Colors.grey.withOpacity(0.4), Colors.grey.withOpacity(0.6)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: isEnabled ? [
+                BoxShadow(
+                  color: color.withOpacity(0.3),
+                  blurRadius: 8,
+                  spreadRadius: 2,
+                ),
+              ] : null,
             ),
-          ],
-        ),
-        child: IconButton(
-          icon: Icon(icon, color: Colors.white, size: size * 0.4),
-          onPressed: onPressed,
-        ),
-      ),
+            child: IconButton(
+              icon: Icon(icon, color: isEnabled ? Colors.white : Colors.white.withOpacity(0.5), size: size * 0.4),
+              onPressed: isEnabled ? onPressed : null,
+            ),
+          ),
+        );
+      },
     );
   }
 
