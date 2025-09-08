@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'package:robotic_telescope/core/services/stepper_motor_controller.dart';
 
 class TelescopeProvider extends ChangeNotifier {
   double _azimuth = 0.0; // Current azimuth from WebSocket
@@ -12,11 +13,7 @@ class TelescopeProvider extends ChangeNotifier {
   // WebSocket connection
   WebSocket? _webSocket;
   String _wsUrl = 'ws://192.168.4.1:81'; // Default telescope IP
-
-  // Stepper motor configuration
-  static const int STEPS_PER_REVOLUTION = 200; // NEMA 17 typical
-  static const double DEGREES_PER_STEP = 360.0 / STEPS_PER_REVOLUTION;
-  static const int MICROSTEPPING = 16; // Common microstepping value
+  final StepperMotorController _stepperController = StepperMotorController();
 
   double get azimuth => _azimuth;
   double get elevation => _elevation;
@@ -32,6 +29,9 @@ class TelescopeProvider extends ChangeNotifier {
       _isConnected = true;
       _status = 'Connected to telescope';
       notifyListeners();
+
+      // Connect stepper motor controller
+      await _stepperController.connect(ip);
 
       // Listen for position updates from telescope
       _webSocket!.listen(
@@ -73,35 +73,10 @@ class TelescopeProvider extends ChangeNotifier {
       await _webSocket!.close();
       _webSocket = null;
     }
+    await _stepperController.disconnect();
     _isConnected = false;
     _status = 'Disconnected';
     notifyListeners();
-  }
-
-  // Send stepper motor commands to telescope
-  Future<void> _sendCommand(String command, Map<String, dynamic> params) async {
-    if (!_isConnected || _webSocket == null) {
-      _status = 'Not connected to telescope';
-      notifyListeners();
-      return;
-    }
-
-    try {
-      var message = {
-        'command': command,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-        ...params
-      };
-
-      _webSocket!.add(jsonEncode(message));
-      _isMoving = true;
-      _status = 'Sending command...';
-      notifyListeners();
-    } catch (e) {
-      _status = 'Command failed';
-      print('Error sending command: $e');
-      notifyListeners();
-    }
   }
 
   // Move telescope to specific position (angle-based)
@@ -112,55 +87,39 @@ class TelescopeProvider extends ChangeNotifier {
       return;
     }
 
-    _sendCommand('goto', {
-      'azimuth': targetAzimuth,
-      'elevation': targetElevation
-    });
-
+    _stepperController.moveTo(targetAzimuth, targetElevation);
     _status = 'Moving to target';
     notifyListeners();
   }
 
   // Manual control - move in specific direction by steps
   void slewUp({int steps = 10}) {
-    _sendCommand('slew', {
-      'direction': 'up',
-      'steps': steps
-    });
+    _stepperController.slewUp(steps: steps);
     _status = 'Moving up';
     notifyListeners();
   }
 
   void slewDown({int steps = 10}) {
-    _sendCommand('slew', {
-      'direction': 'down',
-      'steps': steps
-    });
+    _stepperController.slewDown(steps: steps);
     _status = 'Moving down';
     notifyListeners();
   }
 
   void slewLeft({int steps = 10}) {
-    _sendCommand('slew', {
-      'direction': 'left',
-      'steps': steps
-    });
+    _stepperController.slewLeft(steps: steps);
     _status = 'Moving left';
     notifyListeners();
   }
 
   void slewRight({int steps = 10}) {
-    _sendCommand('slew', {
-      'direction': 'right',
-      'steps': steps
-    });
+    _stepperController.slewRight(steps: steps);
     _status = 'Moving right';
     notifyListeners();
   }
 
   // Stop all movement
   void stop() {
-    _sendCommand('stop', {});
+    _stepperController.stop();
     _isMoving = false;
     _status = 'Stopped';
     notifyListeners();
@@ -168,40 +127,36 @@ class TelescopeProvider extends ChangeNotifier {
 
   // Calibrate telescope position
   void calibrate() {
-    _sendCommand('calibrate', {});
+    _stepperController.calibrate();
     _status = 'Calibrating...';
     notifyListeners();
   }
 
   // Home position
   void goHome() {
-    _sendCommand('home', {});
+    _stepperController.goHome();
     _status = 'Going home';
     notifyListeners();
   }
 
   // Set stepper motor speed (RPM)
   void setSpeed(double rpm) {
-    _sendCommand('set_speed', {
-      'rpm': rpm
-    });
+    _stepperController.setSpeed(rpm);
   }
 
   // Set microstepping mode
   void setMicrostepping(int mode) {
-    _sendCommand('set_microstepping', {
-      'mode': mode
-    });
+    _stepperController.setMicrostepping(mode);
   }
 
   // Get current stepper position in steps
   void getStepperPosition() {
-    _sendCommand('get_position', {});
+    _stepperController.getStepperPosition();
   }
 
   // Emergency stop
   void emergencyStop() {
-    _sendCommand('emergency_stop', {});
+    _stepperController.emergencyStop();
     _isMoving = false;
     _status = 'Emergency stop activated';
     notifyListeners();

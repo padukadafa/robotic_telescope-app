@@ -1,22 +1,5 @@
 import 'package:flutter/foundation.dart';
-
-class AstronomicalObject {
-  final String name;
-  final String type;
-  final double ra; // Right Ascension in hours
-  final double dec; // Declination in degrees
-  final double magnitude;
-  final String description;
-
-  AstronomicalObject({
-    required this.name,
-    required this.type,
-    required this.ra,
-    required this.dec,
-    required this.magnitude,
-    required this.description,
-  });
-}
+import 'package:robotic_telescope/core/models/astronomical_object.dart';
 
 class ObjectProvider extends ChangeNotifier {
   AstronomicalObject? _selectedObject;
@@ -96,11 +79,16 @@ class ObjectProvider extends ChangeNotifier {
     if (_searchQuery.isEmpty) {
       return _objects;
     }
-    return _objects.where((obj) =>
-        obj.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-        obj.type.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-        obj.description.toLowerCase().contains(_searchQuery.toLowerCase())
-    ).toList();
+    return _objects
+        .where(
+          (obj) =>
+              obj.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              obj.type.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              obj.description.toLowerCase().contains(
+                _searchQuery.toLowerCase(),
+              ),
+        )
+        .toList();
   }
 
   void selectObject(AstronomicalObject object) {
