@@ -9,6 +9,8 @@ import 'package:robotic_telescope/features/telescope_control/presentation/widget
 import 'package:robotic_telescope/features/telescope_control/presentation/widgets/telescope_position_visualization.dart';
 import 'package:robotic_telescope/features/telescope_control/presentation/widgets/control_buttons.dart';
 import 'package:robotic_telescope/features/telescope_control/presentation/widgets/elevation_visualization.dart';
+import 'package:robotic_telescope/features/telescope_control/presentation/widgets/fine_tuning_controls.dart';
+import 'package:robotic_telescope/features/telescope_control/presentation/widgets/position_accuracy_indicator.dart';
 
 class TelescopeControlScreen extends StatelessWidget {
   const TelescopeControlScreen({super.key});
@@ -44,6 +46,9 @@ class TelescopeControlScreen extends StatelessWidget {
                       ),
 
                     const ConnectionStatusBanner(),
+
+                    // Position accuracy indicator
+                    const PositionAccuracyIndicator(),
 
                     const SizedBox(height: 32),
 
@@ -85,6 +90,9 @@ class TelescopeControlScreen extends StatelessWidget {
                     ),
 
                     const SizedBox(height: 32),
+
+                    // Fine-tuning controls (appears after GoTo operation)
+                    const FineTuningControls(),
 
                     // Prominent Control Buttons in the center
                     const ControlButtons(),

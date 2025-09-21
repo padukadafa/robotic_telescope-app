@@ -50,50 +50,54 @@ class _ObjectSelectionScreenState extends State<ObjectSelectionScreen> {
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(24.0),
-              child: CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 24),
-                      child: const ObjectSelectionHeader(),
-                    ),
-                  ),
-
-                  SliverAppBar(
-                    surfaceTintColor: Colors.transparent,
-                    foregroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    backgroundColor: Colors.transparent,
-                    snap: true,
-                    floating: true,
-                    flexibleSpace: ObjectSearchBar(
-                      onSearchChanged: (value) {
-                        setState(() {
-                          _searchQuery = value;
-                        });
-                      },
-                      searchQuery: _searchQuery,
-                    ),
-                  ),
-
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 24),
-                      child: Builder(
-                        builder: (context) {
-                          return filteredObjects.isEmpty
-                              ? const EmptyObjectState()
-                              : ObjectList(
-                                  objects: filteredObjects,
-                                  selectedObject: provider.selectedObject,
-                                  onObjectSelected: provider.selectObject,
-                                );
-                        },
+              child: Stack(
+                children: [
+                  CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 24),
+                          child: const ObjectSelectionHeader(),
+                        ),
                       ),
-                    ),
-                  ),
 
-                  SliverToBoxAdapter(
+                      SliverAppBar(
+                        surfaceTintColor: Colors.transparent,
+                        foregroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        backgroundColor: Colors.transparent,
+                        snap: true,
+                        floating: true,
+                        flexibleSpace: ObjectSearchBar(
+                          onSearchChanged: (value) {
+                            setState(() {
+                              _searchQuery = value;
+                            });
+                          },
+                          searchQuery: _searchQuery,
+                        ),
+                      ),
+
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 24),
+                          child: Builder(
+                            builder: (context) {
+                              return filteredObjects.isEmpty
+                                  ? const EmptyObjectState()
+                                  : ObjectList(
+                                      objects: filteredObjects,
+                                      selectedObject: provider.selectedObject,
+                                      onObjectSelected: provider.selectObject,
+                                    );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
                     child: Builder(
                       builder: (context) {
                         if (provider.selectedObject != null) {

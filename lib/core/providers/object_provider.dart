@@ -92,7 +92,12 @@ class ObjectProvider extends ChangeNotifier {
   }
 
   void selectObject(AstronomicalObject object) {
-    _selectedObject = object;
+    if (_selectedObject == object) {
+      _selectedObject = null;
+    } else {
+      _selectedObject = object;
+    }
+
     notifyListeners();
   }
 

@@ -10,6 +10,12 @@ class TelescopeProvider extends ChangeNotifier {
   String _status = 'Ready';
   bool _isConnected = false;
 
+  // Fine-tuning mode state
+  bool _isInFineTuningMode = false;
+  int _fineTuningStepSize = 5; // Default step size for fine-tuning
+  double? _targetAzimuth;
+  double? _targetElevation;
+
   // WebSocket connection
   WebSocket? _webSocket;
   String _wsUrl = 'ws://192.168.4.1:81'; // Default telescope IP
@@ -20,6 +26,12 @@ class TelescopeProvider extends ChangeNotifier {
   bool get isMoving => _isMoving;
   String get status => _status;
   bool get isConnected => _isConnected;
+
+  // Fine-tuning getters
+  bool get isInFineTuningMode => _isInFineTuningMode;
+  int get fineTuningStepSize => _fineTuningStepSize;
+  double? get targetAzimuth => _targetAzimuth;
+  double? get targetElevation => _targetElevation;
 
   // Connect to telescope WebSocket
   Future<void> connectToTelescope(String ip) async {
@@ -87,9 +99,18 @@ class TelescopeProvider extends ChangeNotifier {
       return;
     }
 
+    // Store target position for fine-tuning reference
+    _targetAzimuth = targetAzimuth;
+    _targetElevation = targetElevation;
+
     _stepperController.moveTo(targetAzimuth, targetElevation);
     _status = 'Moving to target';
     notifyListeners();
+
+    // Enable fine-tuning mode after movement
+    Future.delayed(const Duration(seconds: 2), () {
+      enterFineTuningMode();
+    });
   }
 
   // Manual control - move in specific direction by steps
@@ -160,6 +181,75 @@ class TelescopeProvider extends ChangeNotifier {
     _isMoving = false;
     _status = 'Emergency stop activated';
     notifyListeners();
+  }
+
+  // Fine-tuning mode methods
+  void enterFineTuningMode() {
+    _isInFineTuningMode = true;
+    _status = 'Fine-tuning mode active';
+    notifyListeners();
+  }
+
+  void exitFineTuningMode() {
+    _isInFineTuningMode = false;
+    _status = 'Fine-tuning mode disabled';
+    notifyListeners();
+  }
+
+  void setFineTuningStepSize(int stepSize) {
+    _fineTuningStepSize = stepSize;
+    notifyListeners();
+  }
+
+  // Fine-tuning movement methods (smaller, precise steps)
+  void fineTuneUp() {
+    if (!_isConnected) return;
+    _stepperController.slewUp(steps: _fineTuningStepSize);
+    _status = 'Fine-tuning up ${_fineTuningStepSize}°';
+    notifyListeners();
+  }
+
+  void fineTuneDown() {
+    if (!_isConnected) return;
+    _stepperController.slewDown(steps: _fineTuningStepSize);
+    _status = 'Fine-tuning down ${_fineTuningStepSize}°';
+    notifyListeners();
+  }
+
+  void fineTuneLeft() {
+    if (!_isConnected) return;
+    _stepperController.slewLeft(steps: _fineTuningStepSize);
+    _status = 'Fine-tuning left ${_fineTuningStepSize}°';
+    notifyListeners();
+  }
+
+  void fineTuneRight() {
+    if (!_isConnected) return;
+    _stepperController.slewRight(steps: _fineTuningStepSize);
+    _status = 'Fine-tuning right ${_fineTuningStepSize}°';
+    notifyListeners();
+  }
+
+  void confirmFineTuning() {
+    _isInFineTuningMode = false;
+    _status = 'Position confirmed';
+    notifyListeners();
+  }
+
+  // Calculate position accuracy (distance from target)
+  double getPositionAccuracy() {
+    if (_targetAzimuth == null || _targetElevation == null) return 0.0;
+
+    final azimuthDiff = (_azimuth - _targetAzimuth!).abs();
+    final elevationDiff = (_elevation - _targetElevation!).abs();
+
+    // Calculate Euclidean distance
+    return (azimuthDiff * azimuthDiff + elevationDiff * elevationDiff);
+  }
+
+  // Check if position is accurate enough (within threshold)
+  bool isPositionAccurate({double threshold = 2.0}) {
+    return getPositionAccuracy() <= threshold;
   }
 
   @override

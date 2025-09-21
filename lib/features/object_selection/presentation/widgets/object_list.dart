@@ -35,37 +35,10 @@ class ObjectList extends StatelessWidget {
               final object = objects[index];
               final isSelected = selectedObject == object;
 
-              return Container(
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
-                      : Theme.of(context).colorScheme.surface.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(
-                            context,
-                          ).colorScheme.outline.withOpacity(0.2),
-                    width: isSelected ? 2 : 1,
-                  ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primary.withOpacity(0.2),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: ObjectListItem(
-                  object: object,
-                  isSelected: isSelected,
-                  onTap: () => onObjectSelected(object),
-                ),
+              return ObjectListItem(
+                object: object,
+                isSelected: isSelected,
+                onTap: () => onObjectSelected(object),
               );
             }),
           ),
