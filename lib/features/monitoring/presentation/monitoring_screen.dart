@@ -3,13 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:robotic_telescope/core/providers/telescope_provider.dart';
 import 'package:robotic_telescope/core/providers/connection_provider.dart';
 import 'package:robotic_telescope/core/providers/object_provider.dart';
-import 'package:robotic_telescope/features/monitoring/presentation/widgets/monitoring_header.dart';
-import 'package:robotic_telescope/features/monitoring/presentation/widgets/connection_status_card.dart';
-import 'package:robotic_telescope/features/monitoring/presentation/widgets/stepper_motor_status_card.dart';
-import 'package:robotic_telescope/features/monitoring/presentation/widgets/telescope_position_card.dart';
-import 'package:robotic_telescope/features/monitoring/presentation/widgets/target_object_card.dart';
-import 'package:robotic_telescope/features/monitoring/presentation/widgets/movement_status_card.dart';
-import 'package:robotic_telescope/features/monitoring/presentation/widgets/system_health_card.dart';
 
 class MonitoringScreen extends StatelessWidget {
   const MonitoringScreen({super.key});
@@ -43,7 +36,14 @@ class MonitoringScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Header Section
-                      const MonitoringHeader(),
+                      Text(
+                        'System Monitoring',
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                      ),
 
                       const SizedBox(height: 32),
 
@@ -51,33 +51,18 @@ class MonitoringScreen extends StatelessWidget {
                       Expanded(
                         child: ListView(
                           children: [
-                            // Connection Status
-                            const ConnectionStatusCard(),
+                            // Connection Status Card
+                            _buildConnectionCard(context, connectionProvider),
 
                             const SizedBox(height: 16),
 
-                            // Stepper Motor Status
-                            const StepperMotorStatusCard(),
+                            // Telescope Position Card
+                            _buildTelescopeCard(context, telescopeProvider),
 
                             const SizedBox(height: 16),
 
-                            // Telescope Position
-                            const TelescopePositionCard(),
-
-                            const SizedBox(height: 16),
-
-                            // Selected Object
-                            const TargetObjectCard(),
-
-                            const SizedBox(height: 16),
-
-                            // Movement Status
-                            const MovementStatusCard(),
-
-                            const SizedBox(height: 16),
-
-                            // System Health
-                            const SystemHealthCard(),
+                            // System Status Card
+                            _buildSystemCard(context),
                           ],
                         ),
                       ),
@@ -87,6 +72,126 @@ class MonitoringScreen extends StatelessWidget {
               ),
             );
           },
+    );
+  }
+
+  Widget _buildConnectionCard(
+    BuildContext context,
+    ConnectionProvider provider,
+  ) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Connection Status',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  provider.isConnected ? Icons.wifi : Icons.wifi_off,
+                  color: provider.isConnected ? Colors.green : Colors.red,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'WiFi: ${provider.isConnected ? 'Connected' : 'Disconnected'}',
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  provider.telescopeConnected ? Icons.link : Icons.link_off,
+                  color: provider.telescopeConnected
+                      ? Colors.green
+                      : Colors.red,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Telescope: ${provider.telescopeConnected ? 'Connected' : 'Disconnected'}',
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTelescopeCard(BuildContext context, TelescopeProvider provider) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Telescope Position',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(Icons.explore),
+                const SizedBox(width: 8),
+                Text('Azimuth: ${provider.azimuth.toStringAsFixed(1)}°'),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.height),
+                const SizedBox(width: 8),
+                Text('Elevation: ${provider.elevation.toStringAsFixed(1)}°'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSystemCard(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'System Health',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green),
+                const SizedBox(width: 8),
+                const Text('System: Healthy'),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.speed, color: Colors.blue),
+                const SizedBox(width: 8),
+                const Text('Performance: Normal'),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

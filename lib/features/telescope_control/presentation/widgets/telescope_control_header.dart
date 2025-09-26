@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
 
+/// Telescope Control Header Widget - Pure UI Component (Presentation Layer Only)
+///
+/// This widget follows Clean Architecture principles:
+/// - Presentation Layer: Displays telescope control header UI
+/// - No business logic or state management
+/// - Stateless widget with clean visual presentation
+/// - Focuses on header styling and branding
 class TelescopeControlHeader extends StatelessWidget {
-  const TelescopeControlHeader({super.key});
+  /// Optional title override
+  final String? title;
+
+  /// Optional subtitle override
+  final String? subtitle;
+
+  const TelescopeControlHeader({super.key, this.title, this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -10,13 +23,13 @@ class TelescopeControlHeader extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Theme.of(context).colorScheme.primary.withOpacity(0.2),
-            Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+            Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -40,7 +53,7 @@ class TelescopeControlHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Telescope Control',
+                  title ?? 'Telescope Control',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.onBackground,
@@ -48,11 +61,11 @@ class TelescopeControlHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Control your telescope movement',
+                  subtitle ?? 'Control your telescope movement',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withOpacity(0.7),
+                    ).colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                 ),
               ],

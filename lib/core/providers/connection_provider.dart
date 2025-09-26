@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:robotic_telescope/core/services/wifi_manager.dart';
 import 'package:robotic_telescope/core/services/telescope_websocket_manager.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ConnectionProvider extends ChangeNotifier {
   final WiFiManager _wifiManager = WiFiManager();
@@ -23,20 +24,41 @@ class ConnectionProvider extends ChangeNotifier {
     _isScanning = true;
     notifyListeners();
 
-    _availableNetworks = await _wifiManager.scanForTelescopes();
+    try {
+      _availableNetworks = await _wifiManager.scanForTelescopes();
 
-    _isScanning = false;
-    notifyListeners();
+      // Simulate longer scanning time for better UX
+      await Future.delayed(const Duration(seconds: 2));
+    } catch (e) {
+      print('Error during scan: $e');
+      _availableNetworks = [];
+    } finally {
+      _isScanning = false;
+      notifyListeners();
+    }
   }
 
   Future<void> connectToTelescope(String ssid, String password) async {
     try {
+      // For wifi_scan plugin, we need to guide user to connect manually
+      print('Attempting to connect to telescope network: $ssid');
+
       bool wifiResult = await _wifiManager.connectToNetwork(ssid, password);
 
       if (wifiResult) {
-        notifyListeners();
-        // After WiFi connection, try to connect to telescope WebSocket
-        await _connectToTelescopeWebSocket();
+        // Wait a bit for connection to stabilize
+        await Future.delayed(const Duration(seconds: 2));
+
+        // Check actual connectivity status (updated for newer connectivity_plus)
+        final List<ConnectivityResult> connectivityResult = await Connectivity()
+            .checkConnectivity();
+        if (connectivityResult.contains(ConnectivityResult.wifi)) {
+          notifyListeners();
+          // After WiFi connection, try to connect to telescope WebSocket
+          await _connectToTelescopeWebSocket();
+        } else {
+          print('WiFi connection not established');
+        }
       }
     } catch (e) {
       print('Error connecting to network: $e');

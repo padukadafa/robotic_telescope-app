@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:robotic_telescope/core/providers/connection_provider.dart';
 import 'package:robotic_telescope/features/connection/presentation/widgets/scan_button.dart';
-import 'package:robotic_telescope/features/connection/presentation/widgets/network_list_item.dart';
+import 'package:robotic_telescope/features/connection/presentation/widgets/scan_results.dart';
 
 class ConnectionScreen extends StatelessWidget {
   const ConnectionScreen({super.key});
@@ -99,33 +99,17 @@ class ConnectionScreen extends StatelessWidget {
                   const SizedBox(height: 32),
 
                   // Scan Button
-                  ScanButton(provider: provider),
+                  ScanButton(
+                    isScanning: provider.isScanning,
+                    onScanPressed: () async {
+                      await provider.scanForTelescopes();
+                    },
+                  ),
 
                   const SizedBox(height: 32),
 
-                  // Available Networks
-                  if (provider.availableNetworks.isNotEmpty) ...[
-                    Text(
-                      'Available Telescopes',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onBackground,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: provider.availableNetworks.length,
-                        itemBuilder: (context, index) {
-                          final network = provider.availableNetworks[index];
-                          return NetworkListItem(
-                            network: network,
-                            provider: provider,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                  // Scan Results
+                  Expanded(child: ScanResults(provider: provider)),
 
                   // Connection Status
                   if (provider.isConnected) ...[

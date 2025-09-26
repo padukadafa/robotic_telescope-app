@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:robotic_telescope/core/providers/object_provider.dart';
+import 'package:robotic_telescope/core/providers/navigation_provider.dart';
 import 'package:robotic_telescope/features/object_selection/presentation/widgets/object_selection_header.dart';
 import 'package:robotic_telescope/features/object_selection/presentation/widgets/object_search_bar.dart';
 import 'package:robotic_telescope/features/object_selection/presentation/widgets/object_list.dart';
@@ -43,7 +44,7 @@ class _ObjectSelectionScreenState extends State<ObjectSelectionScreen> {
               end: Alignment.bottomCenter,
               colors: [
                 Theme.of(context).colorScheme.background,
-                Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
               ],
             ),
           ),
@@ -103,6 +104,10 @@ class _ObjectSelectionScreenState extends State<ObjectSelectionScreen> {
                         if (provider.selectedObject != null) {
                           return SelectedObjectSummary(
                             selectedObject: provider.selectedObject!,
+                            onGoToPressed: () {
+                              // Navigate to Telescope Control Screen (index 2)
+                              context.read<NavigationProvider>().setIndex(2);
+                            },
                           );
                         }
                         return const SizedBox.shrink();

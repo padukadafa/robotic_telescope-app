@@ -1,6 +1,6 @@
 name: robotic_telescope
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
@@ -10,9 +10,10 @@ dependencies:
   flutter:
     sdk: flutter
   provider: ^6.1.2
-  wifi_iot: ^0.3.18
+  wifi_scan: ^0.4.1
   connectivity_plus: ^6.0.3
   lottie: ^3.1.2
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

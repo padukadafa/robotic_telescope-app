@@ -1,62 +1,100 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:robotic_telescope/core/providers/telescope_provider.dart';
 
+/// Status Display Widget - Pure UI Component (Presentation Layer Only)
+///
+/// This widget follows Clean Architecture principles:
+/// - Presentation Layer: Displays telescope status information
+/// - No business logic or state management
+/// - Receives status data from parent widgets
+/// - Focuses only on visual representation of telescope state
 class StatusDisplay extends StatelessWidget {
-  const StatusDisplay({super.key});
+  /// Current azimuth angle in degrees
+  final double azimuth;
+
+  /// Current elevation angle in degrees
+  final double elevation;
+
+  /// Whether telescope is currently moving
+  final bool isMoving;
+
+  /// Optional title override
+  final String? title;
+
+  const StatusDisplay({
+    super.key,
+    required this.azimuth,
+    required this.elevation,
+    required this.isMoving,
+    this.title,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TelescopeProvider>(
-      builder: (context, telescopeProvider, child) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        children: [
+          if (title != null) ...[
+            Text(
+              title!,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
-          ),
-          child: Row(
+            const SizedBox(height: 12),
+          ],
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildStatusItem(
                 context,
                 'Azimuth',
-                '${telescopeProvider.azimuth.toStringAsFixed(1)}°',
+                '${azimuth.toStringAsFixed(1)}°',
                 Icons.explore,
               ),
               Container(
                 width: 1,
                 height: 40,
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                color: Theme.of(
+                  context,
+                ).colorScheme.outline.withValues(alpha: 0.3),
               ),
               _buildStatusItem(
                 context,
                 'Elevation',
-                '${telescopeProvider.elevation.toStringAsFixed(1)}°',
+                '${elevation.toStringAsFixed(1)}°',
                 Icons.north,
               ),
               Container(
                 width: 1,
                 height: 40,
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                color: Theme.of(
+                  context,
+                ).colorScheme.outline.withValues(alpha: 0.3),
               ),
               _buildStatusItem(
                 context,
                 'Status',
-                telescopeProvider.isMoving ? 'Moving' : 'Stopped',
-                telescopeProvider.isMoving ? Icons.directions_run : Icons.stop,
-                color: telescopeProvider.isMoving ? Colors.green : Colors.red,
+                isMoving ? 'Moving' : 'Stopped',
+                isMoving ? Icons.directions_run : Icons.stop,
+                color: isMoving ? Colors.green : Colors.red,
               ),
             ],
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
+  /// Builds individual status item with proper styling
   Widget _buildStatusItem(
     BuildContext context,
     String label,
@@ -69,14 +107,17 @@ class StatusDisplay extends StatelessWidget {
         Icon(
           icon,
           color:
-              color ?? Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color ??
+              Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
           size: 20,
         ),
         const SizedBox(height: 4),
         Text(
           label,
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.6),
             fontSize: 10,
             fontWeight: FontWeight.w500,
           ),

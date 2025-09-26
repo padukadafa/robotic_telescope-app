@@ -43,12 +43,31 @@ class TelescopeControlScreen extends StatelessWidget {
                     if (objectProvider.selectedObject != null)
                       GoToObjectButton(
                         selectedObject: objectProvider.selectedObject!,
+                        isMoving: telescopeProvider.isMoving,
+                        isConnected: telescopeProvider.isConnected,
+                        onGoTo: () => telescopeProvider.moveTo(
+                          objectProvider.selectedObject!.ra * 15,
+                          objectProvider.selectedObject!.dec,
+                        ),
                       ),
 
-                    const ConnectionStatusBanner(),
+                    ConnectionStatusBanner(
+                      isConnected: telescopeProvider.isConnected,
+                    ),
 
                     // Position accuracy indicator
-                    const PositionAccuracyIndicator(),
+                    PositionAccuracyIndicator(
+                      currentAzimuth: telescopeProvider.azimuth,
+                      currentElevation: telescopeProvider.elevation,
+                      targetAzimuth: telescopeProvider.targetAzimuth,
+                      targetElevation: telescopeProvider.targetElevation,
+                      accuracy:
+                          telescopeProvider.targetAzimuth != null &&
+                              telescopeProvider.targetElevation != null
+                          ? telescopeProvider.getPositionAccuracy()
+                          : null,
+                      isAccurate: telescopeProvider.isPositionAccurate(),
+                    ),
 
                     const SizedBox(height: 32),
 
@@ -78,12 +97,19 @@ class TelescopeControlScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           // Left side - Elevation Visualization
-                          Expanded(child: const ElevationVisualization()),
+                          Expanded(
+                            child: ElevationVisualization(
+                              elevation: telescopeProvider.elevation,
+                            ),
+                          ),
 
                           const SizedBox(width: 16),
 
                           Expanded(
-                            child: const TelescopePositionVisualization(),
+                            child: TelescopePositionVisualization(
+                              azimuth: telescopeProvider.azimuth,
+                              elevation: telescopeProvider.elevation,
+                            ),
                           ),
                         ],
                       ),
@@ -92,15 +118,48 @@ class TelescopeControlScreen extends StatelessWidget {
                     const SizedBox(height: 32),
 
                     // Fine-tuning controls (appears after GoTo operation)
-                    const FineTuningControls(),
+                    FineTuningControls(
+                      isInFineTuningMode: telescopeProvider.isInFineTuningMode,
+                      isConnected: telescopeProvider.isConnected,
+                      fineTuningStepSize: telescopeProvider.fineTuningStepSize,
+                      onExitFineTuning: telescopeProvider.exitFineTuningMode,
+                      onConfirmFineTuning: telescopeProvider.confirmFineTuning,
+                      onFineTuneUp: () => telescopeProvider.fineTuneUp(),
+                      onFineTuneDown: () => telescopeProvider.fineTuneDown(),
+                      onFineTuneLeft: () => telescopeProvider.fineTuneLeft(),
+                      onFineTuneRight: () => telescopeProvider.fineTuneRight(),
+                      onSetStepSize: telescopeProvider.setFineTuningStepSize,
+                    ),
 
                     // Prominent Control Buttons in the center
-                    const ControlButtons(),
+                    ControlButtons(
+                      isConnected: telescopeProvider.isConnected,
+                      onSlewUp: telescopeProvider.isConnected
+                          ? () => telescopeProvider.slewUp(steps: 50)
+                          : null,
+                      onSlewDown: telescopeProvider.isConnected
+                          ? () => telescopeProvider.slewDown(steps: 50)
+                          : null,
+                      onSlewLeft: telescopeProvider.isConnected
+                          ? () => telescopeProvider.slewLeft(steps: 50)
+                          : null,
+                      onSlewRight: telescopeProvider.isConnected
+                          ? () => telescopeProvider.slewRight(steps: 50)
+                          : null,
+                      onStop: telescopeProvider.isConnected
+                          ? telescopeProvider.stop
+                          : null,
+                      stepSize: 50,
+                    ),
 
                     const SizedBox(height: 24),
 
                     // Status Display at the bottom
-                    const StatusDisplay(),
+                    StatusDisplay(
+                      azimuth: telescopeProvider.azimuth,
+                      elevation: telescopeProvider.elevation,
+                      isMoving: telescopeProvider.isMoving,
+                    ),
                   ],
                 ),
               ),
