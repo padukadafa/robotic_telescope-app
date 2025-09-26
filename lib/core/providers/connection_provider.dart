@@ -30,7 +30,6 @@ class ConnectionProvider extends ChangeNotifier {
       // Simulate longer scanning time for better UX
       await Future.delayed(const Duration(seconds: 2));
     } catch (e) {
-      print('Error during scan: $e');
       _availableNetworks = [];
     } finally {
       _isScanning = false;
@@ -41,7 +40,6 @@ class ConnectionProvider extends ChangeNotifier {
   Future<void> connectToTelescope(String ssid, String password) async {
     try {
       // For wifi_scan plugin, we need to guide user to connect manually
-      print('Attempting to connect to telescope network: $ssid');
 
       bool wifiResult = await _wifiManager.connectToNetwork(ssid, password);
 
@@ -56,13 +54,9 @@ class ConnectionProvider extends ChangeNotifier {
           notifyListeners();
           // After WiFi connection, try to connect to telescope WebSocket
           await _connectToTelescopeWebSocket();
-        } else {
-          print('WiFi connection not established');
-        }
+        } else {}
       }
-    } catch (e) {
-      print('Error connecting to network: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _connectToTelescopeWebSocket() async {
@@ -90,12 +84,9 @@ class ConnectionProvider extends ChangeNotifier {
           _wsManager.listen(
             (data) {
               try {
-                var message = jsonDecode(data);
-                print('Received from telescope: $message');
+                jsonDecode(data);
                 // Handle different message types if needed
-              } catch (e) {
-                print('Error parsing telescope message: $e');
-              }
+              } catch (e) {}
             },
             () {
               _telescopeConnected = false;
@@ -103,7 +94,6 @@ class ConnectionProvider extends ChangeNotifier {
             },
             (error) {
               _telescopeConnected = false;
-              print('WebSocket error: $error');
               notifyListeners();
             },
           );
@@ -111,13 +101,10 @@ class ConnectionProvider extends ChangeNotifier {
           notifyListeners();
           break; // Successfully connected, exit loop
         } catch (e) {
-          print('Failed to connect to $ip: $e');
           continue;
         }
       }
-    } catch (e) {
-      print('Error connecting to telescope WebSocket: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> disconnect() async {
@@ -129,9 +116,7 @@ class ConnectionProvider extends ChangeNotifier {
       // Then disconnect from WiFi
       await _wifiManager.disconnect();
       notifyListeners();
-    } catch (e) {
-      print('Error disconnecting: $e');
-    }
+    } catch (e) {}
   }
 
   // Send command to telescope via WebSocket
@@ -161,7 +146,6 @@ class ConnectionProvider extends ChangeNotifier {
       // Status will be received via WebSocket listener
       return null; // Async response will come through WebSocket
     } catch (e) {
-      print('Error getting telescope status: $e');
       return null;
     }
   }

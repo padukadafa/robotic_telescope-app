@@ -235,7 +235,7 @@ class ElevationVisualization extends StatelessWidget {
           bottom: position - 6,
           left: 6,
           child: Text(
-            '${degree}°',
+            '$degree°',
             style: TextStyle(
               color: Theme.of(
                 context,

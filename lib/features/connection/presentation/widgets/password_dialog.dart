@@ -38,7 +38,9 @@ class _PasswordDialogState extends State<PasswordDialog> {
         decoration: InputDecoration(
           labelText: 'Password',
           labelStyle: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.7),
           ),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           focusedBorder: OutlineInputBorder(
@@ -57,7 +59,9 @@ class _PasswordDialogState extends State<PasswordDialog> {
           child: Text(
             'Cancel',
             style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ),

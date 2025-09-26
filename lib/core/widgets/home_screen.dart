@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _selectedIndex = context.read<NavigationProvider>().currentIndex;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(
           _titles[_selectedIndex],
@@ -59,14 +59,14 @@ class _HomeScreenState extends State<HomeScreen> {
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        foregroundColor: Theme.of(context).colorScheme.onBackground,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
       ),
       body: _screens[_selectedIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Theme.of(context).colorScheme.surface.withOpacity(0.8),
+              Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
               Theme.of(context).colorScheme.surface,
             ],
             begin: Alignment.topCenter,
@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),
@@ -97,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
             selectedItemColor: Theme.of(context).colorScheme.primary,
             unselectedItemColor: Theme.of(
               context,
-            ).colorScheme.onSurface.withOpacity(0.6),
+            ).colorScheme.onSurface.withValues(alpha: 0.6),
             selectedLabelStyle: const TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 12,

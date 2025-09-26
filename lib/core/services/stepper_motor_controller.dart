@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -15,7 +17,6 @@ class StepperMotorController {
       _wsUrl = 'ws://$ip:81';
       _webSocket = await WebSocket.connect(_wsUrl);
     } catch (e) {
-      print('Stepper motor WebSocket connection error: $e');
       rethrow;
     }
   }
@@ -42,7 +43,6 @@ class StepperMotorController {
 
       _webSocket!.add(jsonEncode(message));
     } catch (e) {
-      print('Error sending stepper command: $e');
       rethrow;
     }
   }

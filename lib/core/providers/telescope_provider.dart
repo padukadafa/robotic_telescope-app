@@ -56,9 +56,7 @@ class TelescopeProvider extends ChangeNotifier {
               _isMoving = message['moving'] ?? false;
               notifyListeners();
             }
-          } catch (e) {
-            print('Error parsing WebSocket message: $e');
-          }
+          } catch (e) {}
         },
         onDone: () {
           _isConnected = false;
@@ -74,7 +72,6 @@ class TelescopeProvider extends ChangeNotifier {
     } catch (e) {
       _isConnected = false;
       _status = 'Failed to connect';
-      print('WebSocket connection error: $e');
       notifyListeners();
     }
   }
@@ -205,28 +202,28 @@ class TelescopeProvider extends ChangeNotifier {
   void fineTuneUp() {
     if (!_isConnected) return;
     _stepperController.slewUp(steps: _fineTuningStepSize);
-    _status = 'Fine-tuning up ${_fineTuningStepSize}°';
+    _status = 'Fine-tuning up $_fineTuningStepSize°';
     notifyListeners();
   }
 
   void fineTuneDown() {
     if (!_isConnected) return;
     _stepperController.slewDown(steps: _fineTuningStepSize);
-    _status = 'Fine-tuning down ${_fineTuningStepSize}°';
+    _status = 'Fine-tuning down $_fineTuningStepSize°';
     notifyListeners();
   }
 
   void fineTuneLeft() {
     if (!_isConnected) return;
     _stepperController.slewLeft(steps: _fineTuningStepSize);
-    _status = 'Fine-tuning left ${_fineTuningStepSize}°';
+    _status = 'Fine-tuning left $_fineTuningStepSize°';
     notifyListeners();
   }
 
   void fineTuneRight() {
     if (!_isConnected) return;
     _stepperController.slewRight(steps: _fineTuningStepSize);
-    _status = 'Fine-tuning right ${_fineTuningStepSize}°';
+    _status = 'Fine-tuning right $_fineTuningStepSize°';
     notifyListeners();
   }
 

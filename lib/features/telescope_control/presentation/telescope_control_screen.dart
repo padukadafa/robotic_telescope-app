@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:robotic_telescope/core/providers/telescope_provider.dart';
 import 'package:robotic_telescope/core/providers/object_provider.dart';
 import 'package:robotic_telescope/features/telescope_control/presentation/widgets/status_display.dart';
-import 'package:robotic_telescope/features/telescope_control/presentation/widgets/telescope_control_header.dart';
 import 'package:robotic_telescope/features/telescope_control/presentation/widgets/go_to_object_button.dart';
 import 'package:robotic_telescope/features/telescope_control/presentation/widgets/connection_status_banner.dart';
 import 'package:robotic_telescope/features/telescope_control/presentation/widgets/telescope_position_visualization.dart';
@@ -25,8 +24,8 @@ class TelescopeControlScreen extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Theme.of(context).colorScheme.background,
-                Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                Theme.of(context).colorScheme.surface,
+                Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
               ],
             ),
           ),
@@ -36,8 +35,6 @@ class TelescopeControlScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    const TelescopeControlHeader(),
-
                     const SizedBox(height: 32),
 
                     if (objectProvider.selectedObject != null)
@@ -77,16 +74,16 @@ class TelescopeControlScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Theme.of(
                           context,
-                        ).colorScheme.surface.withOpacity(0.8),
+                        ).colorScheme.surface.withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: Theme.of(
                             context,
-                          ).colorScheme.outline.withOpacity(0.3),
+                          ).colorScheme.outline.withValues(alpha: 0.3),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),

@@ -15,7 +15,6 @@ class TelescopeWebSocketManager {
       _isConnected = true;
     } catch (e) {
       _isConnected = false;
-      print('WebSocket connection error: $e');
       rethrow;
     }
   }

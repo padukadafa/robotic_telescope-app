@@ -39,6 +39,7 @@ class ScanResults extends StatelessWidget {
         ),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
             width: 48,
@@ -103,6 +104,7 @@ class ScanResults extends StatelessWidget {
   Widget _buildNetworksList(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         // Header with count
         Container(
@@ -176,8 +178,12 @@ class ScanResults extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.3),
-            Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.1),
+            Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+            Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
@@ -186,6 +192,7 @@ class ScanResults extends StatelessWidget {
         ),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.wifi_off,
@@ -225,6 +232,7 @@ class ScanResults extends StatelessWidget {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   'Tips:',

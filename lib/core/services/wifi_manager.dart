@@ -13,7 +13,6 @@ class WiFiManager {
     var locationStatus = await Permission.location.request();
 
     if (locationStatus != PermissionStatus.granted) {
-      print('Location permission denied');
       return false;
     }
 
@@ -26,22 +25,18 @@ class WiFiManager {
     try {
       // Check if permissions are granted
       if (!await _requestPermissions()) {
-        print('Required permissions not granted');
         return telescopeNetworks;
       }
 
       // Check if WiFi scan is supported
       final canStartScan = await WiFiScan.instance.canStartScan();
       if (canStartScan != CanStartScan.yes) {
-        print('Cannot start WiFi scan: $canStartScan');
         return telescopeNetworks;
       }
 
       // Start scan
       final scanResult = await WiFiScan.instance.startScan();
       if (scanResult) {
-        print('WiFi scan started successfully');
-
         // Wait a bit for scan to complete
         await Future.delayed(const Duration(seconds: 3));
 
@@ -60,14 +55,8 @@ class WiFiManager {
             }
           }
         }
-
-        print('Found ${telescopeNetworks.length} telescope networks');
-      } else {
-        print('Failed to start WiFi scan');
-      }
-    } catch (e) {
-      print('Error scanning networks: $e');
-    }
+      } else {}
+    } catch (e) {}
 
     return telescopeNetworks;
   }
@@ -78,11 +67,6 @@ class WiFiManager {
       // For connection, we need to guide user to connect manually
       // or use platform-specific methods
 
-      print(
-        'Please connect to network "$ssid" manually through device settings',
-      );
-      print('Password: $password');
-
       // For now, we'll simulate connection success
       // In a real app, you'd check connectivity status
       await Future.delayed(const Duration(seconds: 2));
@@ -92,7 +76,6 @@ class WiFiManager {
 
       return true;
     } catch (e) {
-      print('Error connecting to network: $e');
       return false;
     }
   }
@@ -104,10 +87,6 @@ class WiFiManager {
 
       _isConnected = false;
       _connectedNetwork = '';
-
-      print('Please disconnect from WiFi manually through device settings');
-    } catch (e) {
-      print('Error disconnecting: $e');
-    }
+    } catch (e) {}
   }
 }

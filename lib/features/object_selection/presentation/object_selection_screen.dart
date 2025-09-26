@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:robotic_telescope/core/providers/object_provider.dart';
 import 'package:robotic_telescope/core/providers/navigation_provider.dart';
-import 'package:robotic_telescope/features/object_selection/presentation/widgets/object_selection_header.dart';
 import 'package:robotic_telescope/features/object_selection/presentation/widgets/object_search_bar.dart';
 import 'package:robotic_telescope/features/object_selection/presentation/widgets/object_list.dart';
 import 'package:robotic_telescope/features/object_selection/presentation/widgets/selected_object_summary.dart';
@@ -43,7 +42,7 @@ class _ObjectSelectionScreenState extends State<ObjectSelectionScreen> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Theme.of(context).colorScheme.background,
+                Theme.of(context).colorScheme.surface,
                 Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
               ],
             ),
@@ -55,13 +54,6 @@ class _ObjectSelectionScreenState extends State<ObjectSelectionScreen> {
                 children: [
                   CustomScrollView(
                     slivers: [
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 24),
-                          child: const ObjectSelectionHeader(),
-                        ),
-                      ),
-
                       SliverAppBar(
                         surfaceTintColor: Colors.transparent,
                         foregroundColor: Colors.transparent,

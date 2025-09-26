@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
 
 /// System Health Card Widget
-/// 
+///
 /// A presentation widget that displays system health information including:
 /// - Battery status and level
 /// - CPU and memory usage
 /// - Temperature monitoring
 /// - Disk usage statistics
-/// 
+///
 /// This is a pure UI widget that follows clean architecture principles.
 /// It receives system health data through parameters instead of directly
 /// accessing providers, making it more testable and reusable.
 class SystemHealthCard extends StatelessWidget {
   /// Battery level as a percentage (0-100)
   final int batteryLevel;
-  
+
   /// CPU usage as a percentage (0-100)
   final int cpuUsage;
-  
+
   /// Memory usage as a percentage (0-100)
   final int memoryUsage;
-  
+
   /// System temperature in Celsius
   final double temperature;
-  
+
   /// Disk usage as a percentage (0-100)
   final int diskUsage;
-  
+
   /// Whether the system is in a healthy state
   final bool isHealthy;
 
@@ -44,14 +44,14 @@ class SystemHealthCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -61,98 +61,94 @@ class SystemHealthCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(10),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.health_and_safety,
+                    color: Colors.green,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'System Health',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
-                      child: Icon(
-                        Icons.health_and_safety,
-                        color: Colors.green,
-                        size: 24,
+                      const SizedBox(height: 4),
+                      Text(
+                        'All systems operational',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.7),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'System Health',
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface,
-                                ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'All systems operational',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface.withOpacity(0.7),
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildDetailRow(
-                  context,
-                  'Battery Level',
-                  '$batteryLevel%',
-                  Icons.battery_full,
-                  color: _getBatteryColor(),
-                ),
-                _buildDetailRow(
-                  context,
-                  'CPU Usage',
-                  '$cpuUsage%',
-                  Icons.memory,
-                  color: _getUsageColor(cpuUsage),
-                ),
-                _buildDetailRow(
-                  context,
-                  'Memory Usage',
-                  '$memoryUsage%',
-                  Icons.storage,
-                  color: _getUsageColor(memoryUsage),
-                ),
-                _buildDetailRow(
-                  context,
-                  'Temperature',
-                  '${temperature.toStringAsFixed(1)}°C',
-                  Icons.thermostat,
-                  color: _getTemperatureColor(),
-                ),
-                _buildDetailRow(
-                  context,
-                  'Disk Usage',
-                  '$diskUsage%',
-                  Icons.storage,
-                  color: _getUsageColor(diskUsage),
-                ),
-                _buildDetailRow(
-                  context,
-                  'Overall Status',
-                  isHealthy ? 'Healthy' : 'Warning',
-                  isHealthy ? Icons.check_circle : Icons.warning,
-                  color: isHealthy ? Colors.green : Colors.orange,
+                    ],
+                  ),
                 ),
               ],
             ),
-          ),
-        );
+            const SizedBox(height: 16),
+            _buildDetailRow(
+              context,
+              'Battery Level',
+              '$batteryLevel%',
+              Icons.battery_full,
+              color: _getBatteryColor(),
+            ),
+            _buildDetailRow(
+              context,
+              'CPU Usage',
+              '$cpuUsage%',
+              Icons.memory,
+              color: _getUsageColor(cpuUsage),
+            ),
+            _buildDetailRow(
+              context,
+              'Memory Usage',
+              '$memoryUsage%',
+              Icons.storage,
+              color: _getUsageColor(memoryUsage),
+            ),
+            _buildDetailRow(
+              context,
+              'Temperature',
+              '${temperature.toStringAsFixed(1)}°C',
+              Icons.thermostat,
+              color: _getTemperatureColor(),
+            ),
+            _buildDetailRow(
+              context,
+              'Disk Usage',
+              '$diskUsage%',
+              Icons.storage,
+              color: _getUsageColor(diskUsage),
+            ),
+            _buildDetailRow(
+              context,
+              'Overall Status',
+              isHealthy ? 'Healthy' : 'Warning',
+              isHealthy ? Icons.check_circle : Icons.warning,
+              color: isHealthy ? Colors.green : Colors.orange,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   /// Get color for battery level indicator
@@ -175,8 +171,8 @@ class SystemHealthCard extends StatelessWidget {
     if (temperature < 70) return Colors.orange;
     return Colors.red;
   }
-  }
 
+  /// Builds detail row with icon, label, and value
   Widget _buildDetailRow(
     BuildContext context,
     String label,
@@ -192,7 +188,7 @@ class SystemHealthCard extends StatelessWidget {
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: (color ?? Theme.of(context).colorScheme.primary)
-                  .withOpacity(0.1),
+                  .withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(
@@ -206,7 +202,9 @@ class SystemHealthCard extends StatelessWidget {
             child: Text(
               label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ),

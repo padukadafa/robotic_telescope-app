@@ -286,7 +286,7 @@ class FineTuningControls extends StatelessWidget {
                 ),
               ),
               Text(
-                '${stepSize}°',
+                '$stepSize°',
                 style: TextStyle(
                   fontSize: 9,
                   color: isSelected
