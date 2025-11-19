@@ -1,76 +1,58 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:robotic_telescope/core/providers/telescope_provider.dart';
-import 'package:robotic_telescope/core/providers/connection_provider.dart';
-import 'package:robotic_telescope/core/providers/object_provider.dart';
 
-class MonitoringScreen extends StatelessWidget {
+class MonitoringScreen extends StatefulWidget {
   const MonitoringScreen({super.key});
 
   @override
+  State<MonitoringScreen> createState() => _MonitoringScreenState();
+}
+
+class _MonitoringScreenState extends State<MonitoringScreen> {
+  bool isConnected = false;
+  bool telescopeConnected = false;
+  double azimuth = 0.0;
+  double elevation = 45.0;
+  bool isMoving = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Consumer3<TelescopeProvider, ConnectionProvider, ObjectProvider>(
-      builder:
-          (
-            context,
-            telescopeProvider,
-            connectionProvider,
-            objectProvider,
-            child,
-          ) {
-            return Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Theme.of(context).colorScheme.surface,
-                    Theme.of(
-                      context,
-                    ).colorScheme.surface.withValues(alpha: 0.8),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Theme.of(context).colorScheme.surface,
+            Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+          ],
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 32),
+              Expanded(
+                child: ListView(
+                  children: [
+                    _buildConnectionCard(context),
+                    const SizedBox(height: 16),
+                    _buildTelescopeCard(context),
+                    const SizedBox(height: 16),
+                    _buildSystemCard(context),
                   ],
                 ),
               ),
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 32),
-
-                      // Status Cards
-                      Expanded(
-                        child: ListView(
-                          children: [
-                            // Connection Status Card
-                            _buildConnectionCard(context, connectionProvider),
-
-                            const SizedBox(height: 16),
-
-                            // Telescope Position Card
-                            _buildTelescopeCard(context, telescopeProvider),
-
-                            const SizedBox(height: 16),
-
-                            // System Status Card
-                            _buildSystemCard(context),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildConnectionCard(
-    BuildContext context,
-    ConnectionProvider provider,
-  ) {
+  Widget _buildConnectionCard(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -79,20 +61,21 @@ class MonitoringScreen extends StatelessWidget {
           children: [
             Text(
               'Connection Status',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Row(
               children: [
                 Icon(
-                  provider.isConnected ? Icons.wifi : Icons.wifi_off,
-                  color: provider.isConnected ? Colors.green : Colors.red,
+                  isConnected ? Icons.wifi : Icons.wifi_off,
+                  color: isConnected ? Colors.green : Colors.red,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'WiFi: ${provider.isConnected ? 'Connected' : 'Disconnected'}',
+                  'WiFi: ${isConnected ? 'Connected' : 'Disconnected'}',
                 ),
               ],
             ),
@@ -100,14 +83,12 @@ class MonitoringScreen extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  provider.telescopeConnected ? Icons.link : Icons.link_off,
-                  color: provider.telescopeConnected
-                      ? Colors.green
-                      : Colors.red,
+                  telescopeConnected ? Icons.link : Icons.link_off,
+                  color: telescopeConnected ? Colors.green : Colors.red,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Telescope: ${provider.telescopeConnected ? 'Connected' : 'Disconnected'}',
+                  'Telescope: ${telescopeConnected ? 'Connected' : 'Disconnected'}',
                 ),
               ],
             ),
@@ -117,7 +98,7 @@ class MonitoringScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTelescopeCard(BuildContext context, TelescopeProvider provider) {
+  Widget _buildTelescopeCard(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -126,24 +107,45 @@ class MonitoringScreen extends StatelessWidget {
           children: [
             Text(
               'Telescope Position',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(Icons.explore),
-                const SizedBox(width: 8),
-                Text('Azimuth: ${provider.azimuth.toStringAsFixed(1)}°'),
+                Text('Azimuth:'),
+                Text(
+                  '${azimuth.toStringAsFixed(2)}°',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ],
             ),
             const SizedBox(height: 8),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(Icons.height),
-                const SizedBox(width: 8),
-                Text('Elevation: ${provider.elevation.toStringAsFixed(1)}°'),
+                Text('Elevation:'),
+                Text(
+                  '${elevation.toStringAsFixed(2)}°',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Status:'),
+                Text(
+                  isMoving ? 'Moving' : 'Idle',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isMoving ? Colors.orange : Colors.green,
+                  ),
+                ),
               ],
             ),
           ],
@@ -160,25 +162,35 @@ class MonitoringScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'System Health',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              'System Status',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(Icons.check_circle, color: Colors.green),
-                const SizedBox(width: 8),
-                const Text('System: Healthy'),
+                Text('App Version:'),
+                Text(
+                  '1.0.0',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ],
             ),
             const SizedBox(height: 8),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(Icons.speed, color: Colors.blue),
-                const SizedBox(width: 8),
-                const Text('Performance: Normal'),
+                Text('Status:'),
+                Text(
+                  'Ready',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
               ],
             ),
           ],

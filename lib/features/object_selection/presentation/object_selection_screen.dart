@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:robotic_telescope/core/providers/object_provider.dart';
-import 'package:robotic_telescope/core/providers/navigation_provider.dart';
 import 'package:robotic_telescope/features/object_selection/presentation/widgets/object_search_bar.dart';
 import 'package:robotic_telescope/features/object_selection/presentation/widgets/object_list.dart';
-import 'package:robotic_telescope/features/object_selection/presentation/widgets/selected_object_summary.dart';
 import 'package:robotic_telescope/features/object_selection/presentation/widgets/empty_object_state.dart';
+import 'package:robotic_telescope/core/models/astronomical_object.dart';
 
 class ObjectSelectionScreen extends StatefulWidget {
   const ObjectSelectionScreen({super.key});
@@ -17,6 +14,27 @@ class ObjectSelectionScreen extends StatefulWidget {
 class _ObjectSelectionScreenState extends State<ObjectSelectionScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  AstronomicalObject? selectedObject;
+
+  // Sample data
+  final List<AstronomicalObject> objects = [
+    AstronomicalObject(
+      name: 'Mars',
+      type: 'Planet',
+      ra: 5.5,
+      dec: 22.5,
+      magnitude: -2.0,
+      description: 'The Red Planet',
+    ),
+    AstronomicalObject(
+      name: 'Jupiter',
+      type: 'Planet',
+      ra: 10.5,
+      dec: 12.0,
+      magnitude: -2.5,
+      description: 'The largest planet',
+    ),
+  ];
 
   @override
   void dispose() {
@@ -26,92 +44,70 @@ class _ObjectSelectionScreenState extends State<ObjectSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ObjectProvider>(
-      builder: (context, provider, child) {
-        final filteredObjects = provider.objects
-            .where(
-              (obj) =>
-                  obj.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                  obj.type.toLowerCase().contains(_searchQuery.toLowerCase()),
-            )
-            .toList();
+    final filteredObjects = objects
+        .where(
+          (obj) =>
+              obj.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              obj.type.toLowerCase().contains(_searchQuery.toLowerCase()),
+        )
+        .toList();
 
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Theme.of(context).colorScheme.surface,
-                Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Stack(
-                children: [
-                  CustomScrollView(
-                    slivers: [
-                      SliverAppBar(
-                        surfaceTintColor: Colors.transparent,
-                        foregroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        backgroundColor: Colors.transparent,
-                        snap: true,
-                        floating: true,
-                        flexibleSpace: ObjectSearchBar(
-                          onSearchChanged: (value) {
-                            setState(() {
-                              _searchQuery = value;
-                            });
-                          },
-                          searchQuery: _searchQuery,
-                        ),
-                      ),
-
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 24),
-                          child: Builder(
-                            builder: (context) {
-                              return filteredObjects.isEmpty
-                                  ? const EmptyObjectState()
-                                  : ObjectList(
-                                      objects: filteredObjects,
-                                      selectedObject: provider.selectedObject,
-                                      onObjectSelected: provider.selectObject,
-                                    );
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Builder(
-                      builder: (context) {
-                        if (provider.selectedObject != null) {
-                          return SelectedObjectSummary(
-                            selectedObject: provider.selectedObject!,
-                            onGoToPressed: () {
-                              // Navigate to Telescope Control Screen (index 2)
-                              context.read<NavigationProvider>().setIndex(2);
-                            },
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ),
-                ],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Theme.of(context).colorScheme.surface,
+            Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+          ],
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                surfaceTintColor: Colors.transparent,
+                foregroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                backgroundColor: Colors.transparent,
+                snap: true,
+                floating: true,
+                flexibleSpace: ObjectSearchBar(
+                  onSearchChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
+                  searchQuery: _searchQuery,
+                ),
               ),
-            ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 24),
+                  child: Builder(
+                    builder: (context) {
+                      return filteredObjects.isEmpty
+                          ? const EmptyObjectState()
+                          : ObjectList(
+                              objects: filteredObjects,
+                              selectedObject: selectedObject,
+                              onObjectSelected: (obj) {
+                                setState(() {
+                                  selectedObject = obj;
+                                });
+                              },
+                            );
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:robotic_telescope/core/providers/navigation_provider.dart';
 import 'package:robotic_telescope/features/connection/presentation/connection_screen.dart';
 import 'package:robotic_telescope/features/object_selection/presentation/object_selection_screen.dart';
 import 'package:robotic_telescope/features/telescope_control/presentation/telescope_control_screen.dart';
@@ -14,7 +12,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late int _selectedIndex;
+  int _selectedIndex = 0;
 
   final List<Widget> _screens = [
     const ConnectionScreen(),
@@ -30,24 +28,14 @@ class _HomeScreenState extends State<HomeScreen> {
     'Monitoring',
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _selectedIndex = context.read<NavigationProvider>().currentIndex;
-  }
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
-    context.read<NavigationProvider>().setIndex(index);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Listen to navigation changes
-    context.watch<NavigationProvider>();
-    _selectedIndex = context.read<NavigationProvider>().currentIndex;
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
