@@ -6,17 +6,17 @@ console.log("Running on ws://0.0.0.0:81");
 console.log("Listening on all network interfaces");
 console.log("Connect from Flutter app using your computer's IP address");
 console.log("=====================================\n");
+  // Telescope state
+let currentAzimuth = 0;
+let currentElevation = 45;
+let targetAzimuth = null;
+let targetElevation = null;
+let moving = false;
+let speed = 1.0; // degrees per update
 
 wss.on('connection', (ws) => {
   console.log("✅ Flutter app connected");
 
-  // Telescope state
-  let currentAzimuth = 0;
-  let currentElevation = 45;
-  let targetAzimuth = null;
-  let targetElevation = null;
-  let moving = false;
-  let speed = 1.0; // degrees per update
 
   // Send welcome message
   ws.send(JSON.stringify({
@@ -65,7 +65,7 @@ wss.on('connection', (ws) => {
       moving: moving
     }));
 
-  }, 100); // Update every 100ms
+  }, 300); // Update every 100ms
 
   // Handle incoming commands from Flutter
   ws.on('message', (message) => {

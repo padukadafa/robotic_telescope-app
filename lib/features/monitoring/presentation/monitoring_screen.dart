@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:robotic_telescope/core/providers/telescope_provider.dart';
 
 class MonitoringScreen extends StatefulWidget {
   const MonitoringScreen({super.key});
@@ -8,12 +10,6 @@ class MonitoringScreen extends StatefulWidget {
 }
 
 class _MonitoringScreenState extends State<MonitoringScreen> {
-  bool isConnected = false;
-  bool telescopeConnected = false;
-  double azimuth = 0.0;
-  double elevation = 45.0;
-  bool isMoving = false;
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -56,43 +52,46 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Connection Status',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Row(
+        child: Consumer<TelescopeProvider>(
+          builder: (context, data, _) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  isConnected ? Icons.wifi : Icons.wifi_off,
-                  color: isConnected ? Colors.green : Colors.red,
-                ),
-                const SizedBox(width: 8),
                 Text(
-                  'WiFi: ${isConnected ? 'Connected' : 'Disconnected'}',
+                  'Connection Status',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(
+                      data.isConnected ? Icons.wifi : Icons.wifi_off,
+                      color: data.isConnected ? Colors.green : Colors.red,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'WiFi: ${data.isConnected ? 'Connected' : 'Disconnected'}',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      data.isConnected ? Icons.link : Icons.link_off,
+                      color: data.isConnected ? Colors.green : Colors.red,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Telescope: ${data.isConnected ? 'Connected' : 'Disconnected'}',
+                    ),
+                  ],
                 ),
               ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(
-                  telescopeConnected ? Icons.link : Icons.link_off,
-                  color: telescopeConnected ? Colors.green : Colors.red,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Telescope: ${telescopeConnected ? 'Connected' : 'Disconnected'}',
-                ),
-              ],
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -102,53 +101,56 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Telescope Position',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Consumer<TelescopeProvider>(
+          builder: (context, data, child) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Azimuth:'),
                 Text(
-                  '${azimuth.toStringAsFixed(2)}°',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  'Telescope Position',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Azimuth:'),
+                    Text(
+                      '${data.azimuth.toStringAsFixed(2)}°',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Elevation:'),
+                    Text(
+                      '${data.elevation.toStringAsFixed(2)}°',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Status:'),
+                    Text(
+                      data.isMoving ? 'Moving' : 'Idle',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: data.isMoving ? Colors.orange : Colors.green,
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Elevation:'),
-                Text(
-                  '${elevation.toStringAsFixed(2)}°',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Status:'),
-                Text(
-                  isMoving ? 'Moving' : 'Idle',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: isMoving ? Colors.orange : Colors.green,
-                  ),
-                ),
-              ],
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -163,10 +165,9 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
           children: [
             Text(
               'System Status',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Row(

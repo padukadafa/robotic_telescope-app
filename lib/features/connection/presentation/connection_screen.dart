@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:robotic_telescope/features/connection/presentation/widgets/scan_button.dart';
+import 'package:provider/provider.dart';
+import 'package:robotic_telescope/core/di/service_locator.dart';
+import 'package:robotic_telescope/core/providers/telescope_provider.dart';
 
 class ConnectionScreen extends StatefulWidget {
   const ConnectionScreen({super.key});
@@ -9,36 +11,13 @@ class ConnectionScreen extends StatefulWidget {
 }
 
 class _ConnectionScreenState extends State<ConnectionScreen> {
-  bool isScanning = false;
   bool isConnected = false;
-  String connectedNetwork = '';
+  String statusMessage = '';
+  late final telescopeProvider = context.read<TelescopeProvider>();
 
-  void _startDummy() {
-    setState(() {
-      isConnected = true;
-      connectedNetwork = 'Dummy Mode';
-    });
-  }
-
-  void _scanForTelescopes() {
-    setState(() {
-      isScanning = true;
-    });
-    // Simulate scanning
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          isScanning = false;
-        });
-      }
-    });
-  }
-
-  void _disconnect() {
-    setState(() {
-      isConnected = false;
-      connectedNetwork = '';
-    });
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -58,160 +37,109 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 32),
+            child: Consumer<TelescopeProvider>(
+              builder: (context, telescopeProvider, child) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 32),
 
-                // Dummy Mode Button (for testing)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.orange.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.science, color: Colors.orange),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Development Mode',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Test without hardware',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.6),
-                                  ),
-                            ),
-                          ],
+                    // WebSocket Connection Button
+                    ElevatedButton.icon(
+                      onPressed: isConnected
+                          ? null
+                          : () {
+                              telescopeProvider.connect("192.168.1.5");
+                            },
+                      icon: const Icon(Icons.wifi),
+                      label: const Text('Connect WebSocket'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
                         ),
                       ),
+                    ),
+                    // Disconnect Button
+                    if (telescopeProvider.isConnected)
                       ElevatedButton.icon(
-                        onPressed: isConnected ? null : _startDummy,
-                        icon: const Icon(Icons.play_arrow),
-                        label: const Text('Start Dummy'),
+                        onPressed: () {
+                          telescopeProvider.disconnect();
+                        },
+                        icon: const Icon(Icons.close),
+                        label: const Text('Disconnect'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                const Divider(),
-
-                const SizedBox(height: 24),
-
-                // Scan Button
-                ScanButton(
-                  isScanning: isScanning,
-                  onScanPressed: _scanForTelescopes,
-                ),
-
-                const SizedBox(height: 32),
-
-                // Scan Info
-                if (isScanning)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
-
-                // Connection Status
-                if (isConnected) ...[
-                  const SizedBox(height: 24),
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.green.withValues(alpha: 0.2),
-                          Colors.green.withValues(alpha: 0.1),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.green.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: Colors.green,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: 20,
+                          backgroundColor: Colors.red,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 16,
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      ),
+
+                    const SizedBox(height: 24),
+
+                    // Status Message
+                    if (statusMessage.isNotEmpty)
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
                             children: [
-                              Text(
-                                'Connected Successfully',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green,
-                                    ),
+                              Icon(
+                                isConnected ? Icons.check_circle : Icons.info,
+                                color: isConnected ? Colors.green : Colors.grey,
                               ),
-                              Text(
-                                'Connected to $connectedNetwork',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withValues(alpha: 0.7),
-                                    ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  statusMessage,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        TextButton(
-                          onPressed: _disconnect,
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.red,
+                      ),
+
+                    // Connection Status
+                    if (isConnected) ...[
+                      const SizedBox(height: 24),
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.green.withValues(alpha: 0.2),
+                              Colors.green.withValues(alpha: 0.1),
+                            ],
                           ),
-                          child: const Text('Disconnect'),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.green.withValues(alpha: 0.3),
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: const BoxDecoration(
+                                color: Colors.green,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
             ),
           ),
         ),

@@ -2,7 +2,7 @@ import 'dart:io';
 
 class TelescopeWebSocketManager {
   WebSocket? _webSocket;
-  String _wsUrl = 'ws://192.168.4.1:81';
+  String _wsUrl = 'ws://0.0.0.0:81';
   bool _isConnected = false;
 
   bool get isConnected => _isConnected;

@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:robotic_telescope/core/providers/telescope_provider.dart';
 import 'package:robotic_telescope/core/widgets/home_screen.dart';
+import 'package:robotic_telescope/core/di/service_locator.dart';
 
 void main() {
+  // Setup dependency injection
+  setupServiceLocator();
+
   runApp(const MainApp());
 }
 
@@ -28,7 +34,10 @@ class MainApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const HomeScreen(),
+      home: MultiProvider(
+        providers: [ChangeNotifierProvider(create: (_) => TelescopeProvider())],
+        child: const HomeScreen(),
+      ),
     );
   }
 }

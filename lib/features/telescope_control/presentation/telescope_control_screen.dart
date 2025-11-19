@@ -39,22 +39,20 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 32),
-                ConnectionStatusBanner(
-                  isConnected: isConnected,
-                ),
+                ConnectionStatusBanner(isConnected: isConnected),
                 const SizedBox(height: 32),
                 // Position visualizations
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surface.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .outline
-                          .withValues(alpha: 0.3),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outline.withValues(alpha: 0.3),
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -68,9 +66,7 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
-                        child: ElevationVisualization(
-                          elevation: elevation,
-                        ),
+                        child: ElevationVisualization(elevation: elevation),
                       ),
                       const SizedBox(width: 20),
                       Expanded(
