@@ -20,16 +20,16 @@
 #define WEBSOCKET_PORT 81
 
 // Hardware Pin Definitions
-// Azimuth Motor (Horizontal Movement)
-#define AZIMUTH_STEP_PIN 2
-#define AZIMUTH_DIR_PIN 3
+// Azimuth Motor (Horizontal Movement) - NEMA 17
+#define AZIMUTH_DIR_PIN 25
+#define AZIMUTH_STEP_PIN 27
 #define AZIMUTH_ENABLE_PIN 4
 #define AZIMUTH_ENCODER_A 5
 #define AZIMUTH_ENCODER_B 6
 
-// Elevation Motor (Vertical Movement)
-#define ELEVATION_STEP_PIN 7
-#define ELEVATION_DIR_PIN 8
+// Elevation Motor (Vertical Movement) - NEMA 17
+#define ELEVATION_DIR_PIN 26
+#define ELEVATION_STEP_PIN 28
 #define ELEVATION_ENABLE_PIN 9
 #define ELEVATION_ENCODER_A 10
 #define ELEVATION_ENCODER_B 11

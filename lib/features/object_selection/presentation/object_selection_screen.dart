@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:robotic_telescope/features/object_selection/presentation/widgets/object_search_bar.dart';
 import 'package:robotic_telescope/features/object_selection/presentation/widgets/object_list.dart';
 import 'package:robotic_telescope/features/object_selection/presentation/widgets/empty_object_state.dart';
-import 'package:robotic_telescope/core/models/astronomical_object.dart';
+import 'package:robotic_telescope/features/object_selection/provider/object_selection_provider.dart';
 
 class ObjectSelectionScreen extends StatefulWidget {
   const ObjectSelectionScreen({super.key});
@@ -12,102 +13,128 @@ class ObjectSelectionScreen extends StatefulWidget {
 }
 
 class _ObjectSelectionScreenState extends State<ObjectSelectionScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
-  AstronomicalObject? selectedObject;
+  final ScrollController _scrollController = ScrollController();
 
-  // Sample data
-  final List<AstronomicalObject> objects = [
-    AstronomicalObject(
-      name: 'Mars',
-      type: 'Planet',
-      ra: 5.5,
-      dec: 22.5,
-      magnitude: -2.0,
-      description: 'The Red Planet',
-    ),
-    AstronomicalObject(
-      name: 'Jupiter',
-      type: 'Planet',
-      ra: 10.5,
-      dec: 12.0,
-      magnitude: -2.5,
-      description: 'The largest planet',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    // Initialize provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ObjectSelectionProvider>().initialize();
+    });
+  }
 
   @override
   void dispose() {
-    _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  // Handle scroll for pagination
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent * 0.8) {
+      context.read<ObjectSelectionProvider>().loadMoreObjects();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final filteredObjects = objects
-        .where(
-          (obj) =>
-              obj.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              obj.type.toLowerCase().contains(_searchQuery.toLowerCase()),
-        )
-        .toList();
-
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).colorScheme.surface,
-            Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
-          ],
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                surfaceTintColor: Colors.transparent,
-                foregroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                backgroundColor: Colors.transparent,
-                snap: true,
-                floating: true,
-                flexibleSpace: ObjectSearchBar(
-                  onSearchChanged: (value) {
-                    setState(() {
-                      _searchQuery = value;
-                    });
-                  },
-                  searchQuery: _searchQuery,
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 24),
-                  child: Builder(
-                    builder: (context) {
-                      return filteredObjects.isEmpty
-                          ? const EmptyObjectState()
-                          : ObjectList(
-                              objects: filteredObjects,
-                              selectedObject: selectedObject,
-                              onObjectSelected: (obj) {
-                                setState(() {
-                                  selectedObject = obj;
-                                });
-                              },
-                            );
-                    },
-                  ),
-                ),
-              ),
-            ],
+    return Consumer<ObjectSelectionProvider>(
+      builder: (context, provider, child) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Theme.of(context).colorScheme.surface,
+                Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+              ],
+            ),
           ),
-        ),
-      ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  SliverAppBar(
+                    surfaceTintColor: Colors.transparent,
+                    foregroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    backgroundColor: Colors.transparent,
+                    snap: true,
+                    floating: true,
+                    flexibleSpace: ObjectSearchBar(
+                      onSearchChanged: (value) {
+                        provider.setSearchQuery(value);
+                      },
+                      searchQuery: provider.searchQuery,
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 24),
+                      child: Builder(
+                        builder: (context) {
+                          // Show loading for initial load
+                          if (provider.objects.isEmpty && provider.isLoading) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(32.0),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          }
+
+                          // Show empty state
+                          if (provider.objects.isEmpty && !provider.isLoading) {
+                            return const EmptyObjectState();
+                          }
+
+                          // Show list
+                          return Column(
+                            children: [
+                              ObjectList(
+                                objects: provider.objects,
+                                selectedObject: provider.selectedObject,
+                                onObjectSelected: (obj) {
+                                  provider.selectObject(obj);
+                                },
+                              ),
+                              // Loading indicator at bottom
+                              if (provider.isLoading &&
+                                  provider.objects.isNotEmpty)
+                                const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: CircularProgressIndicator(),
+                                ),
+                              // End of list indicator
+                              if (!provider.hasMore &&
+                                  provider.objects.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    'End of list',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -71,6 +71,7 @@ class ObjectListItem extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Object name
                     Text(
                       object.name,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -79,15 +80,20 @@ class ObjectListItem extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      object.type,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.7),
+
+                    // Description (spectral type, magnitude, constellation)
+                    if (object.description.isNotEmpty)
+                      Text(
+                        object.description,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.7),
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 8),
+
+                    // Coordinates and additional info
                     Wrap(
                       spacing: 8,
                       runSpacing: 4,
@@ -102,6 +108,18 @@ class ObjectListItem extends StatelessWidget {
                           'Dec: ${object.dec.toStringAsFixed(2)}°',
                           Icons.north,
                         ),
+                        if (object.mag != null)
+                          _buildInfoChip(
+                            context,
+                            'Mag: ${object.mag!.toStringAsFixed(2)}',
+                            Icons.brightness_5,
+                          ),
+                        if (object.dist != null)
+                          _buildInfoChip(
+                            context,
+                            '${object.dist!.toStringAsFixed(1)} pc',
+                            Icons.straighten,
+                          ),
                       ],
                     ),
                   ],
@@ -127,33 +145,21 @@ class ObjectListItem extends StatelessWidget {
     );
   }
 
-  Color _getObjectColor(String type) {
-    switch (type.toLowerCase()) {
-      case 'star':
-        return Colors.yellow;
-      case 'galaxy':
-        return Colors.blue;
-      case 'nebula':
-        return Colors.purple;
-      case 'planet':
+  Color _getObjectColor(ObjectType type) {
+    switch (type) {
+      case ObjectType.deepSky:
+        return Colors.yellow.shade700;
+      case ObjectType.solarSystem:
         return Colors.orange;
-      default:
-        return Colors.grey;
     }
   }
 
-  IconData _getObjectIcon(String type) {
-    switch (type.toLowerCase()) {
-      case 'star':
+  IconData _getObjectIcon(ObjectType type) {
+    switch (type) {
+      case ObjectType.deepSky:
         return Icons.star;
-      case 'galaxy':
-        return Icons.blur_circular;
-      case 'nebula':
-        return Icons.cloud;
-      case 'planet':
+      case ObjectType.solarSystem:
         return Icons.public;
-      default:
-        return Icons.help_outline;
     }
   }
 

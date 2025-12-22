@@ -115,7 +115,7 @@ class TelescopePositionVisualization extends StatelessWidget {
                 ),
               ),
               child: Text(
-                '${elevation.toStringAsFixed(1)}°',
+                '${azimuth.toStringAsFixed(1)}°',
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 14,

@@ -15,10 +15,8 @@
 #include "sensors.h"
 #include "hardware_test.h"
 
-// WiFi and WebSocket
 WebSocketsServer webSocket = WebSocketsServer(WEBSOCKET_PORT);
 
-// Motor instances
 StepperMotor azimuthMotor(AZIMUTH_STEP_PIN, AZIMUTH_DIR_PIN, AZIMUTH_ENABLE_PIN,
                          AZIMUTH_ENCODER_A, AZIMUTH_ENCODER_B,
                          STEPS_PER_REVOLUTION, MICROSTEPPING, AZIMUTH_GEAR_RATIO);
@@ -88,48 +86,35 @@ void setup() {
 void loop() {
   unsigned long currentTime = millis();
   
-  // Main loop timing control
   if (currentTime - lastMainLoopTime < MAIN_LOOP_INTERVAL) {
     return;
   }
   lastMainLoopTime = currentTime;
   
-  // Handle WebSocket connections
   webSocket.loop();
   
-  // Update motor positions
   updateMotors();
   
-  // Update sensors
   updateSensors();
   
-  // Check safety conditions
   checkSafetyConditions();
   
-  // Send periodic status updates
   sendPeriodicUpdates();
   
-  // Handle emergency conditions
   handleEmergencyConditions();
   
-  // System heartbeat
   updateHeartbeat();
   
-  // Watchdog reset (if enabled)
-  // esp_task_wdt_reset();
 }
 
 void initializeGPIO() {
   Serial.println("Initializing GPIO pins...");
   
-  // Status LED
   pinMode(STATUS_LED_PIN, OUTPUT);
   digitalWrite(STATUS_LED_PIN, LOW);
   
-  // Emergency stop button
   pinMode(EMERGENCY_STOP_PIN, INPUT_PULLUP);
   
-  // Buzzer (if connected)
   if (BUZZER_PIN > 0) {
     pinMode(BUZZER_PIN, OUTPUT);
     digitalWrite(BUZZER_PIN, LOW);
@@ -141,7 +126,6 @@ void initializeGPIO() {
 void setupWiFiAP() {
   Serial.println("Setting up WiFi Access Point...");
   
-  // Configure AP
   WiFi.mode(WIFI_AP);
   
   IPAddress local_IP, gateway, subnet;
@@ -177,7 +161,6 @@ void initializeMotors() {
   azimuthMotor.begin();
   elevationMotor.begin();
   
-  // Set initial speeds
   azimuthMotor.setSpeed(MAX_SPEED_STEPS_PER_SEC * 0.5); // 50% of max speed
   elevationMotor.setSpeed(MAX_SPEED_STEPS_PER_SEC * 0.5);
   
@@ -209,19 +192,16 @@ void updateMotors() {
 void updateSensors() {
   sensors.update();
   
-  // Update motor positions from encoders (if available and not in simulation)
   if (!SIMULATION_MODE && sensors.getAzimuthEncoder() && sensors.getElevationEncoder()) {
     float azEncoderAngle = sensors.getAzimuthEncoder()->getAngle();
     float elEncoderAngle = sensors.getElevationEncoder()->getAngle();
     
-    // Update motor positions with encoder feedback
     azimuthMotor.setPosition(azEncoderAngle);
     elevationMotor.setPosition(elEncoderAngle);
   }
 }
 
 void checkSafetyConditions() {
-  // Check if system is in safe state
   if (!sensors.isSystemSafe()) {
     if (!telescopeSystem.emergencyStop) {
       Serial.println("⚠️  Safety violation detected - initiating emergency stop");
@@ -229,7 +209,6 @@ void checkSafetyConditions() {
     }
   }
   
-  // Check emergency stop button
   if (digitalRead(EMERGENCY_STOP_PIN) == LOW) {
     if (!telescopeSystem.emergencyStop) {
       Serial.println("🚨 Emergency stop button pressed");
@@ -249,11 +228,9 @@ void sendPeriodicUpdates() {
 
 void handleEmergencyConditions() {
   if (telescopeSystem.emergencyStop) {
-    // Stop all motors
     azimuthMotor.emergencyStop();
     elevationMotor.emergencyStop();
     
-    // Flash status LED rapidly
     static unsigned long lastFlash = 0;
     if (millis() - lastFlash > 100) {
       lastFlash = millis();

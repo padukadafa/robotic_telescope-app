@@ -2,6 +2,8 @@ import 'package:get_it/get_it.dart';
 import 'package:robotic_telescope/core/services/telescope_websocket_manager.dart';
 import 'package:robotic_telescope/core/services/telescope_dummy_service.dart';
 import 'package:robotic_telescope/core/services/stepper_motor_controller.dart';
+import 'package:robotic_telescope/core/services/database_helper.dart';
+import 'package:robotic_telescope/core/dao/astronomical_object_dao.dart';
 
 final getIt = GetIt.instance;
 
@@ -22,6 +24,14 @@ void setupServiceLocator() {
   getIt.registerLazySingleton<StepperMotorController>(
     () => StepperMotorController(),
   );
+
+  // Register DatabaseHelper as singleton
+  getIt.registerLazySingleton<DatabaseHelper>(() => DatabaseHelper());
+
+  // Register AstronomicalObjectDao as singleton
+  getIt.registerLazySingleton<AstronomicalObjectDao>(
+    () => AstronomicalObjectDao(getIt<DatabaseHelper>()),
+  );
 }
 
 class Services {
@@ -29,4 +39,6 @@ class Services {
       getIt<TelescopeWebSocketManager>();
   static TelescopeDummyService get dummy => getIt<TelescopeDummyService>();
   static StepperMotorController get stepper => getIt<StepperMotorController>();
+  static DatabaseHelper get database => getIt<DatabaseHelper>();
+  static AstronomicalObjectDao get objectDao => getIt<AstronomicalObjectDao>();
 }

@@ -18,32 +18,17 @@ class ObjectList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: List.generate(objects.length, (index) {
-              final object = objects[index];
-              final isSelected = selectedObject == object;
+    return Column(
+      children: List.generate(objects.length, (index) {
+        final object = objects[index];
+        final isSelected = selectedObject == object;
 
-              return ObjectListItem(
-                object: object,
-                isSelected: isSelected,
-                onTap: () => onObjectSelected(object),
-              );
-            }),
-          ),
-        ),
-      ),
+        return ObjectListItem(
+          object: object,
+          isSelected: isSelected,
+          onTap: () => onObjectSelected(object),
+        );
+      }),
     );
   }
 }
