@@ -10,11 +10,25 @@ class TelescopeProvider extends ChangeNotifier {
   num azimuth = 0.0;
   num elevation = 0.0;
   bool isMoving = false;
+  String? _lastIp;
 
   bool get isConnected => _isConnected;
 
   void updateConnectionStatus(bool status) {
     _isConnected = status;
+    notifyListeners();
+  }
+
+  Future<void> _cleanupConnection() async {
+    if (webSocket != null) {
+      try {
+        await webSocket!.close();
+      } catch (_) {
+        // ignore cleanup errors
+      }
+    }
+    webSocket = null;
+    _isConnected = false;
     notifyListeners();
   }
 
@@ -40,17 +54,32 @@ class TelescopeProvider extends ChangeNotifier {
     await _sendCommand('slew', {'direction': 'up', 'steps': steps});
   }
 
+  Future<void> slewLeft({int steps = 10}) async {
+    await _sendCommand('slew', {'direction': 'left', 'steps': steps});
+  }
+
+  Future<void> slewRight({int steps = 10}) async {
+    await _sendCommand('slew', {'direction': 'right', 'steps': steps});
+  }
+
   Future<void> slewDown({int steps = 10}) async {
     await _sendCommand('slew', {'direction': 'down', 'steps': steps});
   }
 
+  Future<void> stop() async {
+    await _sendCommand('stop', {});
+  }
+
   void connect(String ip) async {
     try {
+      _lastIp = ip;
       final wsUrl = 'ws://$ip:81';
       debugPrint('Connecting to $wsUrl');
-      if (isConnected || webSocket != null) {
-        return;
+      debugPrint('Current connection status: $isConnected');
+      if (webSocket != null) {
+        await _cleanupConnection();
       }
+      debugPrint('Attempting to connect to WebSocket at $wsUrl');
       webSocket = await WebSocket.connect(wsUrl);
       webSocket?.listen(
         (data) {
@@ -63,20 +92,17 @@ class TelescopeProvider extends ChangeNotifier {
         },
         onDone: () {
           debugPrint('WebSocket connection closed');
-          _isConnected = false;
-          notifyListeners();
+          _cleanupConnection();
         },
         onError: (error) {
           debugPrint('WebSocket error: $error');
-          _isConnected = false;
-          notifyListeners();
+          _cleanupConnection();
         },
       );
       _isConnected = true;
       notifyListeners();
     } catch (e) {
-      _isConnected = false;
-      notifyListeners();
+      await _cleanupConnection();
       rethrow;
     }
   }

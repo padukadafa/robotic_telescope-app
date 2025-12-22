@@ -13,6 +13,8 @@ let targetAzimuth = null;
 let targetElevation = null;
 let moving = false;
 let speed = 1.0; // degrees per update
+let manualSlewDirection = null;
+let manualStep = 0.5;
 
 wss.on("connection", (ws) => {
   console.log("✅ Flutter app connected");
@@ -64,6 +66,24 @@ wss.on("connection", (ws) => {
       }
     }
 
+    // Continuous manual slewing while button is held
+    if (manualSlewDirection) {
+      switch (manualSlewDirection) {
+        case "up":
+          currentElevation = Math.min(90, currentElevation + manualStep);
+          break;
+        case "down":
+          currentElevation = Math.max(0, currentElevation - manualStep);
+          break;
+        case "left":
+          currentAzimuth = (currentAzimuth - manualStep + 360) % 360;
+          break;
+        case "right":
+          currentAzimuth = (currentAzimuth + manualStep) % 360;
+          break;
+      }
+    }
+
     // Send position update to Flutter
     ws.send(
       JSON.stringify({
@@ -85,7 +105,7 @@ wss.on("connection", (ws) => {
         case "goto":
           targetAzimuth = data.azimuth;
           targetElevation = data.elevation;
-          moving = true;
+          moving = false;
           console.log(
             `  → Moving to Az=${targetAzimuth}° El=${targetElevation}°`
           );
@@ -99,37 +119,31 @@ wss.on("connection", (ws) => {
           );
           break;
 
-        case "slew":
-          const stepSize = ((data.steps || 10) * 360) / 1000 / 200;
+        case "slew": {
           const direction = data.direction;
-          switch (direction) {
-            case "up":
-              currentElevation = Math.min(90, currentElevation + stepSize);
-              break;
-            case "down":
-              currentElevation = Math.max(0, currentElevation - stepSize);
-              break;
-            case "left":
-              currentAzimuth = (currentAzimuth - stepSize + 360) % 360;
-              break;
-            case "right":
-              currentAzimuth = (currentAzimuth + stepSize) % 360;
-              break;
-          }
-          console.log(`  → Slewed ${direction} by ${stepSize}°`);
+          manualStep = ((data.steps || 10) * 360) / 1000 / 200 || 0.5;
+          manualSlewDirection = direction;
+          targetAzimuth = null;
+          targetElevation = null;
+          moving = true;
+          console.log(
+            `  → Continuous slewing ${direction} @ ${manualStep}°/tick`
+          );
           ws.send(
             JSON.stringify({
               type: "response",
               command: "slew",
-              status: "completed",
+              status: "moving",
               direction: direction,
-              steps: stepSize,
+              stepPerTick: manualStep,
             })
           );
           break;
+        }
 
         case "stop":
           moving = false;
+          manualSlewDirection = null;
           targetAzimuth = null;
           targetElevation = null;
           console.log(`  → Emergency stop`);
@@ -144,6 +158,7 @@ wss.on("connection", (ws) => {
 
         case "emergency_stop":
           moving = false;
+          manualSlewDirection = null;
           targetAzimuth = null;
           targetElevation = null;
           console.log(`  → ⚠️  EMERGENCY STOP`);
@@ -160,6 +175,7 @@ wss.on("connection", (ws) => {
           targetAzimuth = 0;
           targetElevation = 45;
           moving = true;
+          manualSlewDirection = null;
           console.log(`  → Going home position`);
           ws.send(
             JSON.stringify({
@@ -174,6 +190,7 @@ wss.on("connection", (ws) => {
           currentAzimuth = 0;
           currentElevation = 45;
           moving = false;
+          manualSlewDirection = null;
           console.log(`  → Calibrated to home position`);
           ws.send(
             JSON.stringify({

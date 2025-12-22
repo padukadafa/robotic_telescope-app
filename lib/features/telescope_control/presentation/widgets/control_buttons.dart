@@ -67,6 +67,7 @@ class ControlButtons extends StatelessWidget {
                 Icons.arrow_upward,
                 onSlewUp,
                 Colors.green,
+                stopsOnRelease: true,
               ),
             ],
           ),
@@ -82,6 +83,7 @@ class ControlButtons extends StatelessWidget {
                 Icons.arrow_back,
                 onSlewLeft,
                 Colors.orange,
+                stopsOnRelease: true,
               ),
               const SizedBox(width: 32),
               _buildControlButton(
@@ -97,6 +99,7 @@ class ControlButtons extends StatelessWidget {
                 Icons.arrow_forward,
                 onSlewRight,
                 Colors.orange,
+                stopsOnRelease: true,
               ),
             ],
           ),
@@ -112,6 +115,7 @@ class ControlButtons extends StatelessWidget {
                 Icons.arrow_downward,
                 onSlewDown,
                 Colors.green,
+                stopsOnRelease: true,
               ),
             ],
           ),
@@ -127,41 +131,44 @@ class ControlButtons extends StatelessWidget {
     VoidCallback? onPressed,
     Color color, {
     double size = 50,
+    bool stopsOnRelease = false,
   }) {
     final isEnabled = isConnected && onPressed != null;
 
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: isEnabled
-              ? [color.withValues(alpha: 0.8), color]
-              : [
-                  Colors.grey.withValues(alpha: 0.4),
-                  Colors.grey.withValues(alpha: 0.6),
-                ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return GestureDetector(
+      onTapDown: isEnabled ? (_) => onPressed?.call() : null,
+      onTapUp: isEnabled && stopsOnRelease ? (_) => onStop?.call() : null,
+      onTapCancel: isEnabled && stopsOnRelease ? () => onStop?.call() : null,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: isEnabled
+                ? [color.withValues(alpha: 0.8), color]
+                : [
+                    Colors.grey.withValues(alpha: 0.4),
+                    Colors.grey.withValues(alpha: 0.6),
+                  ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: isEnabled
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    spreadRadius: 2,
+                  ),
+                ]
+              : null,
         ),
-        boxShadow: isEnabled
-            ? [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  spreadRadius: 2,
-                ),
-              ]
-            : null,
-      ),
-      child: IconButton(
-        icon: Icon(
+        child: Icon(
           icon,
           color: isEnabled ? Colors.white : Colors.white.withValues(alpha: 0.5),
           size: size * 0.4,
         ),
-        onPressed: isEnabled ? onPressed : null,
       ),
     );
   }

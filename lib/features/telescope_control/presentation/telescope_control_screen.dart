@@ -105,12 +105,19 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen> {
                       onSlewUp: () {
                         value.slewUp();
                       },
+
                       onSlewDown: () {
                         value.slewDown();
                       },
-                      onSlewLeft: () {},
-                      onSlewRight: () {},
-                      onStop: () {},
+                      onSlewLeft: () {
+                        value.slewLeft();
+                      },
+                      onSlewRight: () {
+                        value.slewRight();
+                      },
+                      onStop: () {
+                        value.stop();
+                      },
                     );
                   },
                 ),
