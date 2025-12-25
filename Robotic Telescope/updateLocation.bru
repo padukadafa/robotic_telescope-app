@@ -1,0 +1,24 @@
+meta {
+  name: updateLocation
+  type: ws
+  seq: 2
+}
+
+ws {
+  url: {{baseUrl}}
+  body: ws
+  auth: none
+}
+
+body:ws {
+  name: message 1
+  type: json
+  content: '''
+    {
+      "command": "updateLocation",
+      "latitude": -5.44607,
+      "longitude": 105.26437,
+      "timestamp": 1234567890
+    }
+  '''
+}

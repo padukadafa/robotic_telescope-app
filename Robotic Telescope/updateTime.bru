@@ -1,0 +1,28 @@
+meta {
+  name: updateTime
+  type: ws
+  seq: 3
+}
+
+ws {
+  url: {{baseUrl}}
+  body: ws
+  auth: none
+}
+
+body:ws {
+  name: message 1
+  type: json
+  content: '''
+    {
+      "command": "updateTime",
+      "year": 2025,
+      "month": 12,
+      "day" : 24,
+      "hour" : 12,
+      "minute" : 45,
+      "second" : 52,
+      "timestamp": 1234567890
+    }
+  '''
+}

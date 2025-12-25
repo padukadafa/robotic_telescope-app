@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:robotic_telescope/core/providers/telescope_provider.dart';
+import 'package:robotic_telescope/features/object_selection/provider/object_selection_provider.dart';
+import 'package:robotic_telescope/features/telescope_control/presentation/widgets/go_to_object_button.dart';
 import 'package:robotic_telescope/features/telescope_control/presentation/widgets/status_display.dart';
 import 'package:robotic_telescope/features/telescope_control/presentation/widgets/connection_status_banner.dart';
 import 'package:robotic_telescope/features/telescope_control/presentation/widgets/telescope_position_visualization.dart';
@@ -94,6 +96,26 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen> {
                       azimuth: value.azimuth.toDouble(),
                       elevation: value.elevation.toDouble(),
                       isMoving: value.isMoving,
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                Consumer2<ObjectSelectionProvider, TelescopeProvider>(
+                  builder: (context, objects, telescope, _) {
+                    if (objects.selectedObject == null) {
+                      return const SizedBox.shrink();
+                    }
+                    return GoToObjectButton(
+                      selectedObject: objects.selectedObject!,
+                      isMoving: telescope.isMoving,
+                      isConnected: telescope.isConnected,
+                      onGoTo: telescope.isConnected
+                          ? () async {
+                              await telescope.goToObject(
+                                objects.selectedObject!,
+                              );
+                            }
+                          : null,
                     );
                   },
                 ),

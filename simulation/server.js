@@ -105,7 +105,7 @@ wss.on("connection", (ws) => {
         case "goto":
           targetAzimuth = data.azimuth;
           targetElevation = data.elevation;
-          moving = false;
+          moving = true;
           console.log(
             `  → Moving to Az=${targetAzimuth}° El=${targetElevation}°`
           );

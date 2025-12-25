@@ -1,11 +1,11 @@
 meta {
-  name: ws
+  name: goto
   type: ws
   seq: 1
 }
 
 ws {
-  url: ws://0.0.0.0:81/
+  url: {{baseUrl}}
   body: ws
   auth: none
 }
@@ -16,8 +16,8 @@ body:ws {
   content: '''
     {
       "command": "goto",
-      "azimuth": 192.0,
-      "elevation": 18.0,
+      "dec": 46.024583,
+      "ra": 15,
       "timestamp": 1234567890
     }
   '''

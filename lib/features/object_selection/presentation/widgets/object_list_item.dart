@@ -5,12 +5,20 @@ class ObjectListItem extends StatelessWidget {
   final AstronomicalObject object;
   final bool isSelected;
   final VoidCallback onTap;
+  final double? observerLatitude;
+  final double? observerLongitude;
+  final bool isAboveHorizon;
+  final double? altitudeDeg;
 
   const ObjectListItem({
     super.key,
     required this.object,
     required this.isSelected,
     required this.onTap,
+    this.observerLatitude,
+    this.observerLongitude,
+    this.isAboveHorizon = true,
+    this.altitudeDeg,
   });
 
   @override
@@ -48,7 +56,7 @@ class ObjectListItem extends StatelessWidget {
               ],
       ),
       child: InkWell(
-        onTap: onTap,
+        onTap: isAboveHorizon ? onTap : null,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -76,7 +84,11 @@ class ObjectListItem extends StatelessWidget {
                       object.name,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: isAboveHorizon
+                            ? Theme.of(context).colorScheme.onSurface
+                            : Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.4),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -86,9 +98,8 @@ class ObjectListItem extends StatelessWidget {
                       Text(
                         object.description,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.7),
+                          color: Theme.of(context).colorScheme.onSurface
+                              .withValues(alpha: isAboveHorizon ? 0.7 : 0.3),
                         ),
                       ),
                     const SizedBox(height: 8),
@@ -108,6 +119,12 @@ class ObjectListItem extends StatelessWidget {
                           'Dec: ${object.dec.toStringAsFixed(2)}°',
                           Icons.north,
                         ),
+                        if (altitudeDeg != null)
+                          _buildInfoChip(
+                            context,
+                            'Alt: ${altitudeDeg!.toStringAsFixed(1)}°',
+                            Icons.alt_route,
+                          ),
                         if (object.mag != null)
                           _buildInfoChip(
                             context,
@@ -119,6 +136,12 @@ class ObjectListItem extends StatelessWidget {
                             context,
                             '${object.dist!.toStringAsFixed(1)} pc',
                             Icons.straighten,
+                          ),
+                        if (!isAboveHorizon)
+                          _buildInfoChip(
+                            context,
+                            'Di bawah horizon',
+                            Icons.visibility_off,
                           ),
                       ],
                     ),
