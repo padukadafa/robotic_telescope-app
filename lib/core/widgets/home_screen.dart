@@ -15,18 +15,12 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    const ConnectionScreen(),
     const ObjectSelectionScreen(),
     const TelescopeControlScreen(),
     const MonitoringScreen(),
   ];
 
-  final List<String> _titles = [
-    'Connection',
-    'Objects',
-    'Control',
-    'Monitoring',
-  ];
+  final List<String> _titles = ['Objects', 'Control', 'Monitoring'];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -95,11 +89,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             type: BottomNavigationBarType.fixed,
             items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.wifi),
-                activeIcon: Icon(Icons.wifi, size: 28),
-                label: 'Connection',
-              ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.search),
                 activeIcon: Icon(Icons.search, size: 28),

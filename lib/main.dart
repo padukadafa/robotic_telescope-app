@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:robotic_telescope/core/providers/telescope_provider.dart';
+import 'package:robotic_telescope/core/widgets/wrapper.dart';
 import 'package:robotic_telescope/features/object_selection/provider/object_selection_provider.dart';
 import 'package:robotic_telescope/core/widgets/home_screen.dart';
 import 'package:robotic_telescope/core/di/service_locator.dart';
@@ -40,7 +41,7 @@ class MainApp extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => TelescopeProvider()),
           ChangeNotifierProvider(create: (_) => ObjectSelectionProvider()),
         ],
-        child: const HomeScreen(),
+        child: const WrapperScreen(),
       ),
     );
   }

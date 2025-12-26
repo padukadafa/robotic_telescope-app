@@ -13,6 +13,7 @@ class TelescopeProvider extends ChangeNotifier {
   num elevation = 0.0;
   bool isMoving = false;
   String? _lastIp;
+  bool isCallibrated = false;
 
   bool get isConnected => _isConnected;
 
