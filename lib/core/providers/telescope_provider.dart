@@ -13,7 +13,12 @@ class TelescopeProvider extends ChangeNotifier {
   num elevation = 0.0;
   bool isMoving = false;
   String? _lastIp;
-  bool isCallibrated = false;
+  String compassCalibrationStatus =
+      "not_started"; // statusnya ada "done", "in_progress", "not_started"
+  String gyroCalibrationStatus =
+      "not_started"; // statusnya ada "done", "in_progress", "not_started"
+  bool get isCallibrated =>
+      compassCalibrationStatus == "done" && gyroCalibrationStatus == "done";
 
   bool get isConnected => _isConnected;
 
@@ -88,6 +93,17 @@ class TelescopeProvider extends ChangeNotifier {
     await _sendCommand('stop', {});
   }
 
+  Future<void> calibrateCompass() async {
+    compassCalibrationStatus = "in_progress";
+    notifyListeners();
+    await _sendCommand('calibrateCompass', {});
+  }
+
+  Future<void> calibrateGyro() async {
+    notifyListeners();
+    await _sendCommand('calibrateGyro', {});
+  }
+
   Future<Position?> _getCurrentPosition() async {
     if (!await Geolocator.isLocationServiceEnabled()) {
       return null;
@@ -126,9 +142,19 @@ class TelescopeProvider extends ChangeNotifier {
       webSocket?.listen(
         (data) {
           final jsonData = jsonDecode(data);
-          azimuth = jsonData['azimuth'] ?? azimuth;
-          elevation = jsonData['elevation'] ?? elevation;
-          isMoving = jsonData['moving'] ?? isMoving;
+          if (jsonData['type'] == 'position') {
+            azimuth = jsonData['azimuth'] ?? azimuth;
+            elevation = jsonData['elevation'] ?? elevation;
+            isMoving = jsonData['moving'] ?? isMoving;
+          } else if (jsonData['type'] == 'calibrate') {
+            if (jsonData['sensor'] == 'compass') {
+              compassCalibrationStatus =
+                  jsonData['status'] ?? compassCalibrationStatus;
+            } else if (jsonData['sensor'] == 'gyroscope') {
+              gyroCalibrationStatus =
+                  jsonData['status'] ?? gyroCalibrationStatus;
+            }
+          }
           notifyListeners();
           debugPrint('Received data: $data');
         },

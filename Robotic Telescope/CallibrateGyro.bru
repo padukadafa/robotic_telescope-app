@@ -1,0 +1,21 @@
+meta {
+  name: CallibrateGyro
+  type: ws
+  seq: 4
+}
+
+ws {
+  url: {{baseUrl}}
+  body: ws
+  auth: none
+}
+
+body:ws {
+  name: message 1
+  type: json
+  content: '''
+    {
+      "command" : "calibrateGyro"
+    }
+  '''
+}
