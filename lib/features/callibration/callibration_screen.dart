@@ -20,6 +20,7 @@ class _CallibrationScreenState extends State<CallibrationScreen> {
   _CalibrationStatus _mapProviderStatus(String status) {
     switch (status) {
       case 'in_progress':
+        return _CalibrationStatus.running;
       case 'inprogress':
       case 'running':
       case 'progress':
@@ -227,7 +228,7 @@ class _CallibrationScreenState extends State<CallibrationScreen> {
                     icon: Icons.explore,
                     steps: const [
                       'Jauhkan teleskop dari benda feromagnetik.',
-                      'Gerakkan teleskop perlahan mengikuti pola angka delapan.',
+                      'Gerakkan teleskop perlahan melingkar.',
                       'Tunggu indikator selesai sebelum digunakan.',
                     ],
                     onStart: () =>
@@ -236,7 +237,7 @@ class _CallibrationScreenState extends State<CallibrationScreen> {
                       title: 'Langkah kalibrasi kompas',
                       steps: const [
                         'Pastikan tidak ada magnet kuat dalam radius 2 meter.',
-                        'Gerakkan mount dalam pola angka delapan selama 10-15 detik.',
+                        'Gerakkan mount melingkar selama 10-15 detik.',
                         'Biarkan perangkat diam hingga status selesai.',
                       ],
                     ),

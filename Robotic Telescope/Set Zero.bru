@@ -1,0 +1,23 @@
+meta {
+  name: Set Zero
+  type: ws
+  seq: 7
+}
+
+ws {
+  url: {{baseUrl}}
+  body: ws
+  auth: inherit
+}
+
+body:ws {
+  name: message 1
+  type: json
+  content: '''
+    {
+      "command": "setZero",
+      "direction" : "up",
+      "timestamp": 1234567890
+    }
+  '''
+}

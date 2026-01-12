@@ -16,7 +16,7 @@ class TelescopeProvider extends ChangeNotifier {
   String compassCalibrationStatus =
       "not_started"; // statusnya ada "done", "in_progress", "not_started"
   String gyroCalibrationStatus =
-      "not_started"; // statusnya ada "done", "in_progress", "not_started"
+      "done"; // statusnya ada "done", "in_progress", "not_started"
   bool get isCallibrated =>
       compassCalibrationStatus == "done" && gyroCalibrationStatus == "done";
 

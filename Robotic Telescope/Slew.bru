@@ -1,0 +1,23 @@
+meta {
+  name: Slew
+  type: ws
+  seq: 6
+}
+
+ws {
+  url: {{baseUrl}}
+  body: ws
+  auth: inherit
+}
+
+body:ws {
+  name: message 1
+  type: json
+  content: '''
+    {
+      "command": "slew",
+      "direction" : "up",
+      "timestamp": 1234567890
+    }
+  '''
+}
