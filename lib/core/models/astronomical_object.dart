@@ -1,4 +1,4 @@
-enum ObjectType { deepSky, solarSystem }
+enum ObjectType { star, planet, moon, sun }
 
 class AstronomicalObject {
   final String? proper; // Proper name
@@ -16,6 +16,9 @@ class AstronomicalObject {
   final String? con; // Konstelasi
   final double? lum; // Luminositas
   final String name; // Nama tampilan (proper atau bayer+con)
+  final ObjectType objectType;
+  final int?
+  solarSystemIndex; // Index untuk planet (0-8), matahari (9), bulan (10)
 
   AstronomicalObject({
     this.proper,
@@ -33,7 +36,47 @@ class AstronomicalObject {
     this.con,
     this.lum,
     required this.name,
+    this.objectType = ObjectType.star,
+    this.solarSystemIndex,
   });
+
+  // Constructor untuk objek solar system (planet, matahari, bulan)
+  factory AstronomicalObject.sun({
+    required String name,
+    required int solarSystemIndex,
+  }) {
+    return AstronomicalObject(
+      name: name,
+      ra: 0, // RA/Dec akan di-handle oleh perangkat IoT
+      dec: 0,
+      objectType: ObjectType.sun,
+      solarSystemIndex: solarSystemIndex,
+    );
+  }
+  factory AstronomicalObject.moon({
+    required String name,
+    required int solarSystemIndex,
+  }) {
+    return AstronomicalObject(
+      name: name,
+      ra: 0, // RA/Dec akan di-handle oleh perangkat IoT
+      dec: 0,
+      objectType: ObjectType.moon,
+      solarSystemIndex: solarSystemIndex,
+    );
+  }
+  factory AstronomicalObject.planet({
+    required String name,
+    required int solarSystemIndex,
+  }) {
+    return AstronomicalObject(
+      name: name,
+      ra: 0, // RA/Dec akan di-handle oleh perangkat IoT
+      dec: 0,
+      objectType: ObjectType.planet,
+      solarSystemIndex: solarSystemIndex,
+    );
+  }
 
   // Factory constructor dari database Map
   factory AstronomicalObject.fromMap(Map<String, dynamic> map) {
@@ -71,12 +114,17 @@ class AstronomicalObject {
 
   // Get object type based on available data
   ObjectType get type {
-    // Untuk saat ini semua dari HYG adalah deep sky objects (stars)
-    return ObjectType.deepSky;
+    return objectType;
   }
 
   // Helper untuk mendapatkan deskripsi singkat
   String get description {
+    if (objectType == ObjectType.planet ||
+        objectType == ObjectType.moon ||
+        objectType == ObjectType.sun) {
+      return 'Solar System Object • Index: $solarSystemIndex';
+    }
+
     List<String> parts = [];
 
     if (spect != null) parts.add('Type: $spect');

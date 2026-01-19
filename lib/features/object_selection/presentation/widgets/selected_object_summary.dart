@@ -88,9 +88,7 @@ class SelectedObjectSummary extends StatelessWidget {
                         children: [
                           _buildInfoChip(
                             context,
-                            selectedObject.type == ObjectType.deepSky
-                                ? 'Star'
-                                : 'Solar System',
+                            _getObjectTypeLabel(selectedObject.type),
                             _getObjectIcon(selectedObject.type),
                           ),
                           _buildInfoChip(
@@ -205,10 +203,28 @@ class SelectedObjectSummary extends StatelessWidget {
   /// Gets icon based on object type
   IconData _getObjectIcon(ObjectType type) {
     switch (type) {
-      case ObjectType.deepSky:
+      case ObjectType.star:
         return Icons.star;
-      case ObjectType.solarSystem:
+      case ObjectType.planet:
         return Icons.public;
+      case ObjectType.moon:
+        return Icons.brightness_3;
+      case ObjectType.sun:
+        return Icons.wb_sunny;
+    }
+  }
+
+  /// Gets label based on object type
+  String _getObjectTypeLabel(ObjectType type) {
+    switch (type) {
+      case ObjectType.star:
+        return 'Star';
+      case ObjectType.planet:
+        return 'Planet';
+      case ObjectType.moon:
+        return 'Moon';
+      case ObjectType.sun:
+        return 'Sun';
     }
   }
 

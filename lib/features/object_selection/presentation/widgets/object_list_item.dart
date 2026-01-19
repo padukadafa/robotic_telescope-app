@@ -170,19 +170,27 @@ class ObjectListItem extends StatelessWidget {
 
   Color _getObjectColor(ObjectType type) {
     switch (type) {
-      case ObjectType.deepSky:
+      case ObjectType.planet:
         return Colors.yellow.shade700;
-      case ObjectType.solarSystem:
-        return Colors.orange;
+      case ObjectType.moon:
+        return Colors.grey;
+      case ObjectType.sun:
+        return Colors.orangeAccent;
+      case ObjectType.star:
+        return Colors.blueAccent;
     }
   }
 
   IconData _getObjectIcon(ObjectType type) {
     switch (type) {
-      case ObjectType.deepSky:
-        return Icons.star;
-      case ObjectType.solarSystem:
-        return Icons.public;
+      case ObjectType.planet:
+        return Icons.circle;
+      case ObjectType.moon:
+        return Icons.brightness_3;
+      case ObjectType.sun:
+        return Icons.wb_sunny;
+      case ObjectType.star:
+        return Icons.star_border;
     }
   }
 

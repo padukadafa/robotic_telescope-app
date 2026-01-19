@@ -22,6 +22,7 @@ class _ObjectSelectionScreenState extends State<ObjectSelectionScreen> {
   double? _latitude;
   double? _longitude;
   bool _visibleOnly = false;
+  ObjectType _selectedCategory = ObjectType.star;
 
   @override
   void initState() {
@@ -117,9 +118,57 @@ class _ObjectSelectionScreenState extends State<ObjectSelectionScreen> {
                   ),
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 24),
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Column(
+                        children: [
+                          // Category tabs
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ChoiceChip(
+                                  label: const Center(child: Text('Deep Sky')),
+                                  selected:
+                                      _selectedCategory == ObjectType.star,
+                                  onSelected: (_) {
+                                    setState(() {
+                                      _selectedCategory = ObjectType.star;
+                                      provider.selectObject(null);
+                                    });
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: ChoiceChip(
+                                  label: const Center(
+                                    child: Text('Solar System'),
+                                  ),
+                                  selected: _isSolarSystemCategory(),
+                                  onSelected: (_) {
+                                    setState(() {
+                                      _selectedCategory = ObjectType.planet;
+                                      provider.selectObject(null);
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8),
                       child: Builder(
                         builder: (context) {
+                          // Show solar system objects
+                          if (_isSolarSystemCategory()) {
+                            return _buildSolarSystemObjects(provider);
+                          }
+
                           // Show loading for initial load
                           if (provider.objects.isEmpty && provider.isLoading) {
                             return const Center(
@@ -248,5 +297,177 @@ class _ObjectSelectionScreenState extends State<ObjectSelectionScreen> {
       longitudeDeg: _longitude!,
       dateTime: DateTime.now(),
     );
+  }
+
+  Widget _buildSolarSystemObjects(ObjectSelectionProvider provider) {
+    final planets = [
+      {'name': 'Merkurius', 'index': 0, 'icon': '☿'},
+      {'name': 'Venus', 'index': 1, 'icon': '♀'},
+      {'name': 'Bumi', 'index': 2, 'icon': '🌍'},
+      {'name': 'Mars', 'index': 3, 'icon': '♂'},
+      {'name': 'Jupiter', 'index': 4, 'icon': '♃'},
+      {'name': 'Saturnus', 'index': 5, 'icon': '♄'},
+      {'name': 'Uranus', 'index': 6, 'icon': '♅'},
+      {'name': 'Neptunus', 'index': 7, 'icon': '♆'},
+      {'name': 'Pluto', 'index': 8, 'icon': '♇'},
+    ];
+
+    final specialObjects = [
+      {'name': 'Matahari', 'index': 9, 'icon': '☀️'},
+      {'name': 'Bulan', 'index': 10, 'icon': '🌙'},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12.0),
+          child: Text(
+            'Planet',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        ...planets.map(
+          (planet) => _buildSolarSystemTile(
+            name: planet['name'] as String,
+            index: planet['index'] as int,
+            icon: planet['icon'] as String,
+            provider: provider,
+          ),
+        ),
+        const SizedBox(height: 24),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12.0),
+          child: Text(
+            'Objek Khusus',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        ...specialObjects.map(
+          (obj) => _buildSolarSystemTile(
+            name: obj['name'] as String,
+            index: obj['index'] as int,
+            icon: obj['icon'] as String,
+            provider: provider,
+          ),
+        ),
+        if (provider.selectedObject != null &&
+            _isSolarSystemObject(provider.selectedObject!))
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: Consumer<TelescopeProvider>(
+              builder: (context, telescope, _) {
+                return SelectedObjectSummary(
+                  selectedObject: provider.selectedObject!,
+                  onGoToPressed: telescope.isConnected ? () async {} : null,
+                );
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSolarSystemTile({
+    required String name,
+    required int index,
+    required String icon,
+    required ObjectSelectionProvider provider,
+  }) {
+    final isSelected =
+        provider.selectedObject != null &&
+        provider.selectedObject!.name == name &&
+        _isSolarSystemObject(provider.selectedObject!);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      elevation: isSelected ? 4 : 0,
+      color: isSelected
+          ? Theme.of(context).colorScheme.primaryContainer
+          : Theme.of(context).colorScheme.surface,
+      child: InkWell(
+        onTap: () {
+          final AstronomicalObject solarObject;
+          if (index == 9) {
+            solarObject = AstronomicalObject.sun(
+              name: name,
+              solarSystemIndex: index,
+            );
+          } else if (index == 10) {
+            solarObject = AstronomicalObject.moon(
+              name: name,
+              solarSystemIndex: index,
+            );
+          } else {
+            solarObject = AstronomicalObject.planet(
+              name: name,
+              solarSystemIndex: index,
+            );
+          }
+          provider.selectObject(solarObject);
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Text(icon, style: const TextStyle(fontSize: 32)),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.onPrimaryContainer
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Index: $index',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.onPrimaryContainer
+                                  .withValues(alpha: 0.7)
+                            : Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper to check if current category is solar system
+  bool _isSolarSystemCategory() {
+    return _selectedCategory == ObjectType.planet ||
+        _selectedCategory == ObjectType.sun ||
+        _selectedCategory == ObjectType.moon;
+  }
+
+  // Helper to check if an object is solar system object
+  bool _isSolarSystemObject(AstronomicalObject object) {
+    return object.type == ObjectType.planet ||
+        object.type == ObjectType.sun ||
+        object.type == ObjectType.moon;
   }
 }

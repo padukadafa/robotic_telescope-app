@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:robotic_telescope/features/connection/presentation/connection_screen.dart';
 import 'package:robotic_telescope/features/object_selection/presentation/object_selection_screen.dart';
 import 'package:robotic_telescope/features/telescope_control/presentation/telescope_control_screen.dart';
 import 'package:robotic_telescope/features/monitoring/presentation/monitoring_screen.dart';
+import 'package:robotic_telescope/features/settings/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -41,6 +41,18 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+            tooltip: 'Pengaturan',
+          ),
+        ],
       ),
       body: _screens[_selectedIndex],
       bottomNavigationBar: Container(

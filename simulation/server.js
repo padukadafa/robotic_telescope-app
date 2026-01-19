@@ -1,8 +1,8 @@
 const WebSocket = require("ws");
 
-const wss = new WebSocket.Server({ port: 81 });
+const wss = new WebSocket.Server({ port: 80, path: "/ws" });
 console.log("=== Telescope Simulator WebSocket ===");
-console.log("Running on ws://0.0.0.0:81");
+console.log("Running on ws://0.0.0.0:80");
 console.log("Listening on all network interfaces");
 console.log("Connect from Flutter app using your computer's IP address");
 console.log("=====================================\n");

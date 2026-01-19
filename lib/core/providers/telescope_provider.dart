@@ -6,56 +6,36 @@ import 'package:geolocator/geolocator.dart';
 import 'package:robotic_telescope/core/models/astronomical_object.dart';
 
 class TelescopeProvider extends ChangeNotifier {
-  bool _isConnected = false;
-  WebSocket? webSocket;
   TelescopeProvider();
+
   num azimuth = 0.0;
-  num elevation = 0.0;
-  bool isMoving = false;
-  String? _lastIp;
   String compassCalibrationStatus =
-      "not_started"; // statusnya ada "done", "in_progress", "not_started"
+      "done"; // statusnya ada "done", "in_progress", "not_started"
+
+  num elevation = 0.0;
   String gyroCalibrationStatus =
       "done"; // statusnya ada "done", "in_progress", "not_started"
+
+  bool isMoving = false;
+  double pitch = 0.0; // Pitch angle in degrees
+  // Level/Waterpass data from MPU6050
+  double roll = 0.0; // Roll angle in degrees
+
+  WebSocket? webSocket;
+
+  bool _isConnected = false;
+  String? _lastIp;
+
   bool get isCallibrated =>
       compassCalibrationStatus == "done" && gyroCalibrationStatus == "done";
+
+  bool get isLevel => roll.abs() < 2.0 && pitch.abs() < 2.0;
 
   bool get isConnected => _isConnected;
 
   void updateConnectionStatus(bool status) {
     _isConnected = status;
     notifyListeners();
-  }
-
-  Future<void> _cleanupConnection() async {
-    if (webSocket != null) {
-      try {
-        await webSocket!.close();
-      } catch (_) {
-        // ignore cleanup errors
-      }
-    }
-    webSocket = null;
-    _isConnected = false;
-    notifyListeners();
-  }
-
-  Future<void> _sendCommand(String command, Map<String, dynamic> params) async {
-    if (webSocket == null) {
-      throw Exception('Not connected to stepper motor controller');
-    }
-
-    try {
-      var message = {
-        'command': command,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-        ...params,
-      };
-
-      webSocket?.add(jsonEncode(message));
-    } catch (e) {
-      rethrow;
-    }
   }
 
   Future<void> slewUp({int steps = 10}) async {
@@ -81,12 +61,27 @@ class TelescopeProvider extends ChangeNotifier {
     await _sendCommand('goto', {'azimuth': azimuth, 'elevation': elevation});
   }
 
-  Future<void> goto({required double ra, required double dec}) async {
-    await _sendCommand('goto', {'ra': ra, 'dec': dec});
+  Future<void> goto({
+    required double ra,
+    required double dec,
+    required ObjectType objectType,
+    int? planetIndex,
+  }) async {
+    if (objectType == ObjectType.planet) {
+      _sendCommand("goto-planet", {'planetIndex': planetIndex});
+    } else if (objectType == ObjectType.moon) {
+      _sendCommand("goto-moon", {});
+    } else if (objectType == ObjectType.sun) {
+      _sendCommand("goto-sun", {});
+    } else if (objectType == ObjectType.star) {
+      await _sendCommand('goto-star', {'ra': ra, 'dec': dec});
+    } else {
+      await _sendCommand('goto', {'ra': ra, 'dec': dec});
+    }
   }
 
   Future<void> goToObject(AstronomicalObject object) async {
-    await goto(ra: object.ra, dec: object.dec);
+    await goto(ra: object.ra, dec: object.dec, objectType: object.objectType);
   }
 
   Future<void> stop() async {
@@ -104,30 +99,6 @@ class TelescopeProvider extends ChangeNotifier {
     await _sendCommand('calibrateGyro', {});
   }
 
-  Future<Position?> _getCurrentPosition() async {
-    if (!await Geolocator.isLocationServiceEnabled()) {
-      return null;
-    }
-
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      return null;
-    }
-
-    try {
-      return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-    } catch (_) {
-      return null;
-    }
-  }
-
   void connect(String ip) async {
     try {
       _lastIp = ip;
@@ -142,10 +113,12 @@ class TelescopeProvider extends ChangeNotifier {
       webSocket?.listen(
         (data) {
           final jsonData = jsonDecode(data);
-          if (jsonData['type'] == 'position') {
+          if (jsonData['type'] == 'status') {
             azimuth = jsonData['azimuth'] ?? azimuth;
             elevation = jsonData['elevation'] ?? elevation;
             isMoving = jsonData['moving'] ?? isMoving;
+            roll = (jsonData['roll'] ?? roll).toDouble();
+            pitch = (jsonData['pitch'] ?? pitch).toDouble();
           } else if (jsonData['type'] == 'calibrate') {
             if (jsonData['sensor'] == 'compass') {
               compassCalibrationStatus =
@@ -214,6 +187,62 @@ class TelescopeProvider extends ChangeNotifier {
       );
     } else {
       debugPrint('Unable to retrieve device location for updateLocation');
+    }
+  }
+
+  Future<void> _cleanupConnection() async {
+    if (webSocket != null) {
+      try {
+        await webSocket!.close();
+      } catch (_) {
+        // ignore cleanup errors
+      }
+    }
+    webSocket = null;
+    _isConnected = false;
+    notifyListeners();
+  }
+
+  Future<void> _sendCommand(String command, Map<String, dynamic> params) async {
+    if (webSocket == null) {
+      throw Exception('Not connected to stepper motor controller');
+    }
+    print("Send command $command with params $params");
+
+    try {
+      var message = {
+        'command': command,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+        ...params,
+      };
+
+      webSocket?.add(jsonEncode(message));
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Position?> _getCurrentPosition() async {
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      return null;
+    }
+
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      return null;
+    }
+
+    try {
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+    } catch (_) {
+      return null;
     }
   }
 }
