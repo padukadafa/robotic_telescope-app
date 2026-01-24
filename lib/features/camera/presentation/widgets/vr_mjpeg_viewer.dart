@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -171,28 +172,88 @@ class _VRMjpegViewerState extends State<VRMjpegViewer> {
       );
     }
 
-    // Side-by-side stereoscopic view
+    // Side-by-side stereoscopic view with barrel distortion
     return Row(
       children: [
-        // Left eye view
-        Expanded(
-          child: Image.memory(
-            _currentFrame!,
-            fit: BoxFit.cover,
-            gaplessPlayback: true,
-          ),
-        ),
+        // Left eye view with barrel distortion
+        Expanded(child: _buildVRLensView(_currentFrame!)),
         // Center divider
         Container(width: 2, color: Colors.white.withValues(alpha: 0.3)),
-        // Right eye view (duplicate)
-        Expanded(
-          child: Image.memory(
-            _currentFrame!,
-            fit: BoxFit.cover,
-            gaplessPlayback: true,
-          ),
-        ),
+        // Right eye view with barrel distortion
+        Expanded(child: _buildVRLensView(_currentFrame!)),
       ],
     );
   }
+
+  /// Builds a single VR lens view with pincushion distortion correction
+  Widget _buildVRLensView(Uint8List frameData) {
+    return Container(
+      color: Colors.black,
+      child: FutureBuilder<ui.Image>(
+        future: _decodeImage(frameData),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Container(color: Colors.black);
+          }
+          return CustomPaint(
+            painter: _VRDistortionPainter(snapshot.data!),
+            size: Size.infinite,
+          );
+        },
+      ),
+    );
+  }
+
+  Future<ui.Image> _decodeImage(Uint8List data) async {
+    final codec = await ui.instantiateImageCodec(data);
+    final frame = await codec.getNextFrame();
+    return frame.image;
+  }
+}
+
+/// Pincushion distortion painter for VR lens correction
+class _VRDistortionPainter extends CustomPainter {
+  final ui.Image image;
+
+  // Distortion coefficients for Cardboard-style lenses
+  static const double k1 = 0.22;
+  static const double k2 = 0.24;
+
+  _VRDistortionPainter(this.image);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final centerX = size.width / 2;
+    final centerY = size.height / 2;
+    final maxRadius = size.width / 2;
+
+    final paint = Paint()..filterQuality = FilterQuality.medium;
+
+    // Apply pincushion pre-distortion
+    for (double y = 0; y < size.height; y += 1.5) {
+      for (double x = 0; x < size.width; x += 1.5) {
+        final dx = (x - centerX) / maxRadius;
+        final dy = (y - centerY) / maxRadius;
+        final r2 = dx * dx + dy * dy;
+        final distortion = 1.0 + k1 * r2 + k2 * r2 * r2;
+
+        final srcX = centerX + dx * maxRadius * distortion;
+        final srcY = centerY + dy * maxRadius * distortion;
+
+        if (srcX >= 0 && srcX < size.width && srcY >= 0 && srcY < size.height) {
+          final srcRect = Rect.fromLTWH(
+            srcX * image.width / size.width,
+            srcY * image.height / size.height,
+            1.5 * image.width / size.width,
+            1.5 * image.height / size.height,
+          );
+          final dstRect = Rect.fromLTWH(x, y, 1.5, 1.5);
+          canvas.drawImageRect(image, srcRect, dstRect, paint);
+        }
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_VRDistortionPainter oldDelegate) => true;
 }
