@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
 /// VR MJPEG Viewer widget that displays side-by-side stereoscopic view
@@ -26,12 +27,33 @@ class _VRMjpegViewerState extends State<VRMjpegViewer> {
   http.Client? _httpClient;
   Stream<Uint8List>? _stream;
   bool _isConnected = false;
-  Uint8List? _currentFrame;
+  ui.Image? _currentImage;
+  ui.FragmentShader? _shader;
+  bool _isShaderLoaded = false;
+  Timer? _frameTimer;
+  Uint8List? _pendingFrame;
 
   @override
   void initState() {
     super.initState();
+    _loadShader();
     _initializeStream();
+  }
+
+  Future<void> _loadShader() async {
+    try {
+      final program = await ui.FragmentProgram.fromAsset(
+        'shaders/vr_distortion.frag',
+      );
+      if (mounted) {
+        setState(() {
+          _shader = program.fragmentShader();
+          _isShaderLoaded = true;
+        });
+      }
+    } catch (e) {
+      print('Failed to load shader: $e');
+    }
   }
 
   @override
@@ -48,14 +70,18 @@ class _VRMjpegViewerState extends State<VRMjpegViewer> {
       _isConnected = false;
     });
 
+    // Frame rate limiter to 30 FPS for better performance
+    _frameTimer = Timer.periodic(const Duration(milliseconds: 33), (_) {
+      if (_pendingFrame != null && mounted) {
+        _updateFrame(_pendingFrame!);
+        _pendingFrame = null;
+      }
+    });
+
     _stream = _getMjpegStream(widget.streamUrl);
     _stream?.listen(
       (frame) {
-        if (mounted) {
-          setState(() {
-            _currentFrame = frame;
-          });
-        }
+        _pendingFrame = frame;
       },
       onError: (error) {
         if (mounted) {
@@ -63,6 +89,23 @@ class _VRMjpegViewerState extends State<VRMjpegViewer> {
         }
       },
     );
+  }
+
+  Future<void> _updateFrame(Uint8List frame) async {
+    try {
+      final codec = await ui.instantiateImageCodec(frame);
+      final frameImage = await codec.getNextFrame();
+
+      if (mounted) {
+        setState(() {
+          _currentImage?.dispose();
+          _currentImage = frameImage.image;
+        });
+      }
+      codec.dispose();
+    } catch (e) {
+      print('Error decoding frame: $e');
+    }
   }
 
   Stream<Uint8List> _getMjpegStream(String url) async* {
@@ -144,19 +187,24 @@ class _VRMjpegViewerState extends State<VRMjpegViewer> {
   }
 
   void _cancelStream() {
+    _frameTimer?.cancel();
+    _frameTimer = null;
     _httpClient?.close();
     _httpClient = null;
+    _currentImage?.dispose();
+    _currentImage = null;
   }
 
   @override
   void dispose() {
     _cancelStream();
+    _shader?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_currentFrame == null) {
+    if (_currentImage == null || !_isShaderLoaded) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -172,88 +220,58 @@ class _VRMjpegViewerState extends State<VRMjpegViewer> {
       );
     }
 
-    // Side-by-side stereoscopic view with barrel distortion
+    // Side-by-side stereoscopic view with GPU-accelerated barrel distortion
     return Row(
       children: [
         // Left eye view with barrel distortion
-        Expanded(child: _buildVRLensView(_currentFrame!)),
+        Expanded(child: _buildVRLensView()),
         // Center divider
         Container(width: 2, color: Colors.white.withValues(alpha: 0.3)),
         // Right eye view with barrel distortion
-        Expanded(child: _buildVRLensView(_currentFrame!)),
+        Expanded(child: _buildVRLensView()),
       ],
     );
   }
 
-  /// Builds a single VR lens view with pincushion distortion correction
-  Widget _buildVRLensView(Uint8List frameData) {
+  /// Builds a single VR lens view with GPU-accelerated distortion
+  Widget _buildVRLensView() {
     return Container(
       color: Colors.black,
-      child: FutureBuilder<ui.Image>(
-        future: _decodeImage(frameData),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Container(color: Colors.black);
-          }
-          return CustomPaint(
-            painter: _VRDistortionPainter(snapshot.data!),
-            size: Size.infinite,
-          );
-        },
+      child: CustomPaint(
+        painter: _VRDistortionPainter(image: _currentImage!, shader: _shader!),
+        size: Size.infinite,
       ),
     );
   }
-
-  Future<ui.Image> _decodeImage(Uint8List data) async {
-    final codec = await ui.instantiateImageCodec(data);
-    final frame = await codec.getNextFrame();
-    return frame.image;
-  }
 }
 
-/// Pincushion distortion painter for VR lens correction
+/// GPU-accelerated pincushion distortion painter for VR lens correction
 class _VRDistortionPainter extends CustomPainter {
   final ui.Image image;
+  final ui.FragmentShader shader;
 
   // Distortion coefficients for Cardboard-style lenses
-  static const double k1 = 0.22;
+  static const double k1 = 1;
   static const double k2 = 0.24;
 
-  _VRDistortionPainter(this.image);
+  _VRDistortionPainter({required this.image, required this.shader});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final centerX = size.width / 2;
-    final centerY = size.height / 2;
-    final maxRadius = size.width / 2;
+    // Set shader uniforms
+    shader.setFloat(0, size.width); // uSize.x
+    shader.setFloat(1, size.height); // uSize.y
+    shader.setImageSampler(0, image); // uTexture
+    shader.setFloat(2, k1); // uK1
+    shader.setFloat(3, k2); // uK2
 
-    final paint = Paint()..filterQuality = FilterQuality.medium;
-
-    // Apply pincushion pre-distortion
-    for (double y = 0; y < size.height; y += 1.5) {
-      for (double x = 0; x < size.width; x += 1.5) {
-        final dx = (x - centerX) / maxRadius;
-        final dy = (y - centerY) / maxRadius;
-        final r2 = dx * dx + dy * dy;
-        final distortion = 1.0 + k1 * r2 + k2 * r2 * r2;
-
-        final srcX = centerX + dx * maxRadius * distortion;
-        final srcY = centerY + dy * maxRadius * distortion;
-
-        if (srcX >= 0 && srcX < size.width && srcY >= 0 && srcY < size.height) {
-          final srcRect = Rect.fromLTWH(
-            srcX * image.width / size.width,
-            srcY * image.height / size.height,
-            1.5 * image.width / size.width,
-            1.5 * image.height / size.height,
-          );
-          final dstRect = Rect.fromLTWH(x, y, 1.5, 1.5);
-          canvas.drawImageRect(image, srcRect, dstRect, paint);
-        }
-      }
-    }
+    // Draw using GPU shader
+    final paint = Paint()..shader = shader;
+    canvas.drawRect(Offset.zero & size, paint);
   }
 
   @override
-  bool shouldRepaint(_VRDistortionPainter oldDelegate) => true;
+  bool shouldRepaint(_VRDistortionPainter oldDelegate) {
+    return oldDelegate.image != image;
+  }
 }
