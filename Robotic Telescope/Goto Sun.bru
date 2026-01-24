@@ -1,0 +1,21 @@
+meta {
+  name: Goto Sun
+  type: ws
+  seq: 8
+}
+
+ws {
+  url: {{baseUrl}}
+  body: ws
+  auth: none
+}
+
+body:ws {
+  name: message 1
+  type: json
+  content: '''
+    {
+      "command" : "goto-sun"
+    }
+  '''
+}

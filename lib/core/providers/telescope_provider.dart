@@ -131,6 +131,7 @@ class TelescopeProvider extends ChangeNotifier {
           notifyListeners();
           debugPrint('Received data: $data');
         },
+
         onDone: () {
           debugPrint('WebSocket connection closed');
           _cleanupConnection();
@@ -141,9 +142,8 @@ class TelescopeProvider extends ChangeNotifier {
         },
       );
       _isConnected = true;
-
-      notifyListeners();
       init();
+      notifyListeners();
     } catch (e) {
       await _cleanupConnection();
       rethrow;
