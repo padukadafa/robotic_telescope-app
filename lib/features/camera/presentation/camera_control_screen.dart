@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:robotic_telescope/core/providers/telescope_provider.dart';
 import 'package:robotic_telescope/features/camera/presentation/widgets/mjpeg_viewer.dart';
+import 'package:robotic_telescope/features/camera/presentation/widgets/vr_mjpeg_viewer.dart';
 import 'package:robotic_telescope/features/telescope_control/presentation/widgets/control_buttons.dart';
 
 class CameraControlScreen extends StatefulWidget {
@@ -80,7 +81,7 @@ class _CameraControlScreenState extends State<CameraControlScreen> {
     if (_isVRMode) {
       return _buildVRView();
     }
-    
+
     if (_isFullscreen) {
       return _buildFullscreenView();
     }
@@ -132,7 +133,7 @@ class _CameraControlScreenState extends State<CameraControlScreen> {
                   child: MjpegViewer(
                     key: ValueKey(_streamKey),
                     streamUrl: cameraUrl,
-                    fit: BoxFit.contain,
+                    fit: BoxFit.cover,
                     onConnected: () {
                       if (mounted) {
                         setState(() {
@@ -286,6 +287,104 @@ class _CameraControlScreenState extends State<CameraControlScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildVRView() {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // Side-by-side stereoscopic view using single stream
+          VRMjpegViewer(
+            key: ValueKey(_streamKey),
+            streamUrl: cameraUrl,
+            onConnected: () {
+              if (mounted) {
+                setState(() {
+                  _isConnected = true;
+                  _hasError = false;
+                });
+              }
+            },
+            onError: () {
+              if (mounted) {
+                setState(() {
+                  _hasError = true;
+                  _isConnected = false;
+                });
+              }
+            },
+          ),
+          // VR mode indicator and exit button
+          Positioned(
+            top: 20,
+            left: 0,
+            right: 0,
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.view_in_ar,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'VR MODE',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 20,
+            right: 16,
+            child: IconButton(
+              icon: const Icon(Icons.close),
+              color: Colors.white,
+              iconSize: 32,
+              onPressed: _toggleVRMode,
+              tooltip: 'Exit VR Mode',
+            ),
+          ),
+          // Status indicator
+          if (_hasError)
+            const Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Text(
+                  'Connection Error',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
