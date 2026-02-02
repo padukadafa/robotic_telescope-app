@@ -14,7 +14,7 @@ class CameraControlScreen extends StatefulWidget {
 }
 
 class _CameraControlScreenState extends State<CameraControlScreen> {
-  final String cameraUrl = 'http://192.168.1.50:81';
+  final String cameraUrl = 'http://192.168.4.50:81';
   bool _isFullscreen = false;
   bool _isVRMode = false;
   bool _isConnected = false;
@@ -202,7 +202,7 @@ class _CameraControlScreenState extends State<CameraControlScreen> {
                           ),
                           const Spacer(),
                           Text(
-                            '192.168.1.50:81',
+                            '192.168.4.50:81',
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
                                   color: Theme.of(context).colorScheme.onSurface
@@ -213,7 +213,7 @@ class _CameraControlScreenState extends State<CameraControlScreen> {
                       ),
                     ),
                     const Divider(height: 1),
-                    // Telescope Control
+                    // Telescope Control`
                     Consumer<TelescopeProvider>(
                       builder: (context, telescope, child) {
                         return Column(
