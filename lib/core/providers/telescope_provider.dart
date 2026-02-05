@@ -81,7 +81,22 @@ class TelescopeProvider extends ChangeNotifier {
   }
 
   Future<void> goToObject(AstronomicalObject object) async {
-    await goto(ra: object.ra, dec: object.dec, objectType: object.objectType);
+    if (object.objectType == ObjectType.planet ||
+        object.objectType == ObjectType.sun ||
+        object.objectType == ObjectType.moon) {
+      await goto(
+        ra: 0,
+        dec: 0,
+        objectType: object.objectType,
+        planetIndex: object.solarSystemIndex,
+      );
+      return;
+    }
+    await goto(
+      ra: object.ra * 15,
+      dec: object.dec,
+      objectType: object.objectType,
+    );
   }
 
   Future<void> stop() async {

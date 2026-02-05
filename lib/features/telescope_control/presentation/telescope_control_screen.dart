@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:gamepads/gamepads.dart';
 import 'package:provider/provider.dart';
 import 'package:robotic_telescope/core/providers/telescope_provider.dart';
 import 'package:robotic_telescope/features/object_selection/provider/object_selection_provider.dart';
@@ -18,6 +20,92 @@ class TelescopeControlScreen extends StatefulWidget {
 }
 
 class _TelescopeControlScreenState extends State<TelescopeControlScreen> {
+  Timer? _autoStopTimer;
+  String? _lastCommand;
+  DateTime? _lastMovementTime;
+  static const _autoStopDuration = Duration(milliseconds: 2000);
+  static const _minMovementDuration = Duration(milliseconds: 100);
+
+  @override
+  void initState() {
+    super.initState();
+    
+    Gamepads.events.listen((event) {
+      print('Device: ${event.gamepadId}');
+      print('Button: ${event.key}');
+      print('Value: ${event.value}');
+      print("Type: ${event.type}");
+      if (event.type == KeyType.analog) {
+        final now = DateTime.now();
+
+        if (event.key == "AXIS_HAT_X" && event.value == -1.0) {
+          // Left
+          _lastCommand = 'left';
+          _lastMovementTime = now;
+          context.read<TelescopeProvider>().slewLeft();
+          _startAutoStopTimer();
+        } else if (event.key == "AXIS_HAT_X" && event.value == 1.0) {
+          // Right
+          _lastCommand = 'right';
+          _lastMovementTime = now;
+          context.read<TelescopeProvider>().slewRight();
+          _startAutoStopTimer();
+        } else if (event.key == "AXIS_HAT_Y" && event.value == -1.0) {
+          // Up
+          _lastCommand = 'up';
+          _lastMovementTime = now;
+          context.read<TelescopeProvider>().slewUp();
+          _startAutoStopTimer();
+        } else if (event.key == "AXIS_HAT_Y" && event.value == 1.0) {
+          // Down
+          _lastCommand = 'down';
+          _lastMovementTime = now;
+          context.read<TelescopeProvider>().slewDown();
+          _startAutoStopTimer();
+        } else if (event.value == 0.0) {
+          // Validasi: Abaikan value 0 jika datang terlalu cepat setelah perintah gerakan
+          if (_lastMovementTime != null) {
+            final timeSinceLastMovement = now.difference(_lastMovementTime!);
+            if (timeSinceLastMovement < _minMovementDuration) {
+              print(
+                'Ignoring premature stop signal: ${timeSinceLastMovement.inMilliseconds}ms since last movement',
+              );
+              return; // Abaikan perintah stop yang terlalu cepat
+            }
+          }
+
+          // Stop hanya jika sudah cukup waktu sejak perintah gerakan terakhir
+          _autoStopTimer?.cancel();
+          _lastCommand = null;
+          _lastMovementTime = null;
+          context.read<TelescopeProvider>().stop();
+        }
+      } else if (event.type == KeyType.button) {
+        if (event.key == "KEYCODE_BUTTON_A") {
+          context.read<TelescopeProvider>().stop();
+        }
+      }
+    });
+  }
+
+  void _startAutoStopTimer() {
+    _autoStopTimer?.cancel();
+    _autoStopTimer = Timer(_autoStopDuration, () {
+      if (mounted) {
+        print('Auto-stop: Tidak ada perintah dalam $_autoStopDuration');
+        context.read<TelescopeProvider>().stop();
+        _lastCommand = null;
+        _lastMovementTime = null;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoStopTimer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

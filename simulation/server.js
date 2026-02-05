@@ -1,10 +1,14 @@
 const WebSocket = require("ws");
 
-const wss = new WebSocket.Server({ port: 80, path: "/ws" });
+const wss = new WebSocket.Server({
+  port: 80,
+  host: "0.0.0.0",
+  path: "/ws",
+});
 console.log("=== Telescope Simulator WebSocket ===");
 console.log("Running on ws://0.0.0.0:80");
 console.log("Listening on all network interfaces");
-console.log("Connect from Flutter app using your computer's IP address");
+console.log("To connect, use ws://192.168.4.1:80/ws or your computer's IP");
 console.log("=====================================\n");
 // Telescope state
 let currentAzimuth = 0;
@@ -24,7 +28,7 @@ wss.on("connection", (ws) => {
     JSON.stringify({
       type: "info",
       message: "Telescope Simulator Ready",
-    })
+    }),
   );
 
   // Position update interval
@@ -60,8 +64,8 @@ wss.on("connection", (ws) => {
         targetElevation = null;
         console.log(
           `✓ Reached target position: Az=${currentAzimuth.toFixed(
-            2
-          )}° El=${currentElevation.toFixed(2)}°`
+            2,
+          )}° El=${currentElevation.toFixed(2)}°`,
         );
       }
     }
@@ -91,7 +95,7 @@ wss.on("connection", (ws) => {
         azimuth: parseFloat(currentAzimuth.toFixed(2)),
         elevation: parseFloat(currentElevation.toFixed(2)),
         moving: moving,
-      })
+      }),
     );
   }, 300); // Update every 100ms
 
@@ -107,7 +111,7 @@ wss.on("connection", (ws) => {
           targetElevation = data.elevation;
           moving = true;
           console.log(
-            `  → Moving to Az=${targetAzimuth}° El=${targetElevation}°`
+            `  → Moving to Az=${targetAzimuth}° El=${targetElevation}°`,
           );
           ws.send(
             JSON.stringify({
@@ -115,7 +119,7 @@ wss.on("connection", (ws) => {
               command: "goto",
               status: "moving",
               message: `Moving to Az=${targetAzimuth}° El=${targetElevation}°`,
-            })
+            }),
           );
           break;
 
@@ -127,7 +131,7 @@ wss.on("connection", (ws) => {
           targetElevation = null;
           moving = true;
           console.log(
-            `  → Continuous slewing ${direction} @ ${manualStep}°/tick`
+            `  → Continuous slewing ${direction} @ ${manualStep}°/tick`,
           );
           ws.send(
             JSON.stringify({
@@ -136,7 +140,7 @@ wss.on("connection", (ws) => {
               status: "moving",
               direction: direction,
               stepPerTick: manualStep,
-            })
+            }),
           );
           break;
         }
@@ -152,7 +156,7 @@ wss.on("connection", (ws) => {
               type: "response",
               command: "stop",
               status: "stopped",
-            })
+            }),
           );
           break;
 
@@ -167,7 +171,7 @@ wss.on("connection", (ws) => {
               type: "response",
               command: "emergency_stop",
               status: "stopped",
-            })
+            }),
           );
           break;
 
@@ -182,7 +186,7 @@ wss.on("connection", (ws) => {
               type: "response",
               command: "home",
               status: "moving",
-            })
+            }),
           );
           break;
 
@@ -198,7 +202,7 @@ wss.on("connection", (ws) => {
               command: "calibrate",
               status: "calibrated",
               message: "Telescope calibrated to home position",
-            })
+            }),
           );
           break;
 
@@ -211,15 +215,15 @@ wss.on("connection", (ws) => {
               command: "set_speed",
               status: "updated",
               speed: speed,
-            })
+            }),
           );
           break;
 
         case "get_position":
           console.log(
             `  → Position query: Az=${currentAzimuth.toFixed(
-              2
-            )}° El=${currentElevation.toFixed(2)}°`
+              2,
+            )}° El=${currentElevation.toFixed(2)}°`,
           );
           ws.send(
             JSON.stringify({
@@ -227,7 +231,7 @@ wss.on("connection", (ws) => {
               azimuth: parseFloat(currentAzimuth.toFixed(2)),
               elevation: parseFloat(currentElevation.toFixed(2)),
               moving: moving,
-            })
+            }),
           );
           break;
 
@@ -239,7 +243,7 @@ wss.on("connection", (ws) => {
               status: "connected",
               server: "telescope_simulator",
               version: "1.0.0",
-            })
+            }),
           );
           break;
 
@@ -249,7 +253,7 @@ wss.on("connection", (ws) => {
             JSON.stringify({
               type: "error",
               message: `Unknown command: ${data.command}`,
-            })
+            }),
           );
       }
     } catch (e) {

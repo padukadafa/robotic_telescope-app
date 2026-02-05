@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gamepads/gamepads.dart';
 import 'package:provider/provider.dart';
 import 'package:robotic_telescope/core/providers/telescope_provider.dart';
 import 'package:robotic_telescope/core/widgets/home_screen.dart';
