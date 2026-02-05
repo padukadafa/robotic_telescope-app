@@ -37,11 +37,9 @@ class CameraServerService {
 
     // Get device IP address
     final info = NetworkInfo();
-    _serverIpAddress = await info.getWifiIP();
+    _serverIpAddress = await info.getWifiIP() ?? 'localhost';
 
-    if (_serverIpAddress == null) {
-      _serverIpAddress = '0.0.0.0';
-    }
+    print('Device IP: $_serverIpAddress');
 
     // Start HTTP server
     await _startHttpServer();
@@ -57,21 +55,80 @@ class CameraServerService {
       InternetAddress.anyIPv4,
       serverPort,
     );
-    print(
-      'Camera server listening on http://${_httpServer!.address.host}:${_httpServer!.port}',
-    );
+    print('Camera streaming at http://$_serverIpAddress:${_httpServer!.port}');
+    print('Stream URL: http://$_serverIpAddress:${_httpServer!.port}/stream');
   }
 
   Future<shelf.Response> _handleRequest(shelf.Request request) async {
-    if (request.url.path == 'stream') {
+    // Root endpoint - info
+    if (request.url.path == '' || request.url.path == '/') {
       return shelf.Response.ok(
-        'Camera streaming at http://$_serverIpAddress:$serverPort\n'
-        'Note: MJPEG streaming requires native implementation',
+        'Camera Server Running\n'
+        'Access MJPEG stream at: http://$_serverIpAddress:$serverPort/stream\n'
+        'Status: ${_isCameraInitialized ? "Camera Ready" : "Camera Initializing"}',
         headers: {'Content-Type': 'text/plain'},
       );
     }
 
-    return shelf.Response.ok('Camera Server - Use /stream endpoint');
+    // Stream endpoint - MJPEG stream
+    if (request.url.path == 'stream') {
+      if (!_isCameraInitialized || _cameraController == null) {
+        return shelf.Response.internalServerError(
+          body: 'Camera not initialized',
+        );
+      }
+
+      final controller = StreamController<List<int>>();
+
+      // Start streaming images
+      _streamMJPEG(controller);
+
+      return shelf.Response.ok(
+        controller.stream,
+        headers: {
+          'Content-Type': 'multipart/x-mixed-replace; boundary=frame',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      );
+    }
+
+    return shelf.Response.notFound(
+      'Endpoint not found. Use /stream for MJPEG stream',
+    );
+  }
+
+  Future<void> _streamMJPEG(StreamController<List<int>> controller) async {
+    try {
+      // Stream frames continuously
+      while (!controller.isClosed && _isCameraInitialized) {
+        try {
+          final image = await _cameraController!.takePicture();
+          final bytes = await image.readAsBytes();
+
+          // Send MJPEG frame
+          final frame = [
+            ...('--frame\r\n').codeUnits,
+            ...('Content-Type: image/jpeg\r\n').codeUnits,
+            ...('Content-Length: ${bytes.length}\r\n\r\n').codeUnits,
+            ...bytes,
+            ...('\r\n').codeUnits,
+          ];
+
+          controller.add(frame);
+
+          // Control frame rate (adjust as needed)
+          await Future.delayed(const Duration(milliseconds: 100));
+        } catch (e) {
+          print('Error capturing frame: $e');
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
+      }
+    } catch (e) {
+      print('Stream error: $e');
+    } finally {
+      controller.close();
+    }
   }
 
   Future<void> stopServer() async {

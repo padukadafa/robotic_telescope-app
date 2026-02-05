@@ -23,13 +23,13 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen> {
   Timer? _autoStopTimer;
   String? _lastCommand;
   DateTime? _lastMovementTime;
-  static const _autoStopDuration = Duration(milliseconds: 2000);
+  static const _autoStopDuration = Duration(milliseconds: 1500);
   static const _minMovementDuration = Duration(milliseconds: 100);
 
   @override
   void initState() {
     super.initState();
-    
+
     Gamepads.events.listen((event) {
       print('Device: ${event.gamepadId}');
       print('Button: ${event.key}');

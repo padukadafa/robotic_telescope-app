@@ -27,6 +27,7 @@ dependencies:
   network_info_plus: ^5.0.0
   shelf: ^1.4.1
   gamepads: ^0.1.9
+  image: ^4.0.0
 
 dev_dependencies:
   flutter_test:
