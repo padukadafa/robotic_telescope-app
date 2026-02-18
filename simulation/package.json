@@ -11,6 +11,9 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "express": "^5.2.1",
+    "node-webcam": "^0.8.2",
     "ws": "^8.18.3"
-  }
+  },
+  "keywords": []
 }

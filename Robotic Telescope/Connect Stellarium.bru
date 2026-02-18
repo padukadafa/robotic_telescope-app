@@ -1,0 +1,22 @@
+meta {
+  name: Connect Stellarium
+  type: ws
+  seq: 11
+}
+
+ws {
+  url: {{baseUrl}}
+  body: ws
+  auth: none
+}
+
+body:ws {
+  name: message 1
+  type: json
+  content: '''
+    {
+      "command" : "goto-planet",
+      "planetIndex" : 4
+    }
+  '''
+}

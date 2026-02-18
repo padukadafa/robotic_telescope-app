@@ -226,6 +226,7 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen> {
                     builder: (context, value, child) {
                       return ControlButtons(
                         isConnected: value.isConnected,
+                        isHoldingPosition: value.isHoldingPosition,
                         onSlewUp: () {
                           value.slewUp();
                         },
@@ -241,6 +242,9 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen> {
                         },
                         onStop: () {
                           value.stop();
+                        },
+                        onHoldPosition: () {
+                          value.holdPosition();
                         },
                       );
                     },

@@ -11,12 +11,16 @@ class ControlButtons extends StatelessWidget {
   /// Whether telescope is connected
   final bool isConnected;
 
+  /// Whether hold position is active
+  final bool isHoldingPosition;
+
   /// Callbacks for control actions
   final VoidCallback? onSlewUp;
   final VoidCallback? onSlewDown;
   final VoidCallback? onSlewLeft;
   final VoidCallback? onSlewRight;
   final VoidCallback? onStop;
+  final VoidCallback? onHoldPosition;
 
   /// Optional title override
   final String? title;
@@ -27,11 +31,13 @@ class ControlButtons extends StatelessWidget {
   const ControlButtons({
     super.key,
     required this.isConnected,
+    this.isHoldingPosition = false,
     this.onSlewUp,
     this.onSlewDown,
     this.onSlewLeft,
     this.onSlewRight,
     this.onStop,
+    this.onHoldPosition,
     this.title,
     this.stepSize = 50,
   });
@@ -119,6 +125,14 @@ class ControlButtons extends StatelessWidget {
               ),
             ],
           ),
+
+          const SizedBox(height: 24),
+
+          // Hold Position button
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.center,
+          //   children: [_buildHoldPositionButton(context)],
+          // ),
         ],
       ),
     );
@@ -169,6 +183,27 @@ class ControlButtons extends StatelessWidget {
           color: isEnabled ? Colors.white : Colors.white.withValues(alpha: 0.5),
           size: size * 0.4,
         ),
+      ),
+    );
+  }
+
+  /// Builds Hold Position button
+  Widget _buildHoldPositionButton(BuildContext context) {
+    final isEnabled = isConnected && onHoldPosition != null;
+    final color = isHoldingPosition ? Colors.green : Colors.blue;
+    final icon = isHoldingPosition ? Icons.lock : Icons.lock_open;
+    final label = isHoldingPosition ? 'Holding Position' : 'Hold Position';
+
+    return ElevatedButton.icon(
+      onPressed: isEnabled ? onHoldPosition : null,
+      icon: Icon(icon),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isEnabled ? color : Colors.grey,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: isEnabled ? 4 : 0,
       ),
     );
   }

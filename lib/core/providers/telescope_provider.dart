@@ -20,6 +20,7 @@ class TelescopeProvider extends ChangeNotifier {
   double pitch = 0.0; // Pitch angle in degrees
   // Level/Waterpass data from MPU6050
   double roll = 0.0; // Roll angle in degrees
+  bool isHoldingPosition = false; // State for hold position toggle
 
   WebSocket? webSocket;
 
@@ -39,19 +40,40 @@ class TelescopeProvider extends ChangeNotifier {
   }
 
   Future<void> slewUp({int steps = 10}) async {
-    await _sendCommand('slew', {'direction': 'up', 'steps': steps});
+    await _sendCommand('slew', {
+      'direction': 'up',
+      'steps': steps,
+      'holdPosition': isHoldingPosition,
+    });
   }
 
   Future<void> slewLeft({int steps = 10}) async {
-    await _sendCommand('slew', {'direction': 'left', 'steps': steps});
+    await _sendCommand('slew', {
+      'direction': 'left',
+      'steps': steps,
+      'holdPosition': isHoldingPosition,
+    });
   }
 
   Future<void> slewRight({int steps = 10}) async {
-    await _sendCommand('slew', {'direction': 'right', 'steps': steps});
+    await _sendCommand('slew', {
+      'direction': 'right',
+      'steps': steps,
+      'holdPosition': isHoldingPosition,
+    });
   }
 
   Future<void> slewDown({int steps = 10}) async {
-    await _sendCommand('slew', {'direction': 'down', 'steps': steps});
+    await _sendCommand('slew', {
+      'direction': 'down',
+      'steps': steps,
+      'holdPosition': isHoldingPosition,
+    });
+  }
+
+  Future<void> holdPosition() async {
+    isHoldingPosition = !isHoldingPosition;
+    notifyListeners();
   }
 
   Future<void> goToAzEl({

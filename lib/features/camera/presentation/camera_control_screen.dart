@@ -24,7 +24,7 @@ class CameraControlScreen extends StatefulWidget {
 }
 
 class _CameraControlScreenState extends State<CameraControlScreen> {
-  String cameraUrl = 'http://192.168.4.50:81';
+  String cameraUrl = 'http://192.168.4.50:81/stream';
   bool _isFullscreen = false;
   bool _isVRMode = false;
   bool _isConnected = false;
@@ -141,7 +141,7 @@ class _CameraControlScreenState extends State<CameraControlScreen> {
         portController: _portController,
         onScanQR: _showQRScanner,
         onSave: (ip, port) {
-          final newUrl = 'http://$ip:$port';
+          final newUrl = 'http://$ip:$port/stream';
           setState(() {
             cameraUrl = newUrl;
           });
@@ -164,10 +164,14 @@ class _CameraControlScreenState extends State<CameraControlScreen> {
             String newUrl;
             if (qrData.startsWith('http://') || qrData.startsWith('https://')) {
               newUrl = qrData;
+              // Tambahkan /stream jika belum ada
+              if (!newUrl.endsWith('/stream')) {
+                newUrl = '$newUrl/stream';
+              }
             } else if (qrData.contains(':')) {
-              newUrl = 'http://$qrData';
+              newUrl = 'http://$qrData/stream';
             } else {
-              newUrl = 'http://$qrData:81';
+              newUrl = 'http://$qrData:81/stream';
             }
 
             final uri = Uri.tryParse(newUrl);

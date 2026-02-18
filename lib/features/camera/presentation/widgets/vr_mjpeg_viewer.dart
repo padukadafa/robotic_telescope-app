@@ -222,22 +222,24 @@ class _VRMjpegViewerState extends State<VRMjpegViewer> {
     // Side-by-side stereoscopic view with GPU-accelerated barrel distortion
     return Row(
       children: [
-        // Left eye view with barrel distortion
-        Expanded(child: _buildVRLensView()),
-        // Center divider
-        Container(width: 2, color: Colors.white.withValues(alpha: 0.3)),
-        // Right eye view with barrel distortion
-        Expanded(child: _buildVRLensView()),
+        // Left eye view - shift right via shader
+        Expanded(child: _buildVRLensView(offsetX: 0.11)),
+        // Right eye view - shift left via shader
+        Expanded(child: _buildVRLensView(offsetX: -0.11)),
       ],
     );
   }
 
   /// Builds a single VR lens view with GPU-accelerated distortion
-  Widget _buildVRLensView() {
+  Widget _buildVRLensView({required double offsetX}) {
     return Container(
       color: Colors.black,
       child: CustomPaint(
-        painter: _VRDistortionPainter(image: _currentImage!, shader: _shader!),
+        painter: _VRDistortionPainter(
+          image: _currentImage!,
+          shader: _shader!,
+          offsetX: offsetX,
+        ),
         size: Size.infinite,
       ),
     );
@@ -248,12 +250,17 @@ class _VRMjpegViewerState extends State<VRMjpegViewer> {
 class _VRDistortionPainter extends CustomPainter {
   final ui.Image image;
   final ui.FragmentShader shader;
+  final double offsetX;
 
   // Distortion coefficients for Cardboard-style lenses
-  static const double k1 = 1;
+  static const double k1 = 1.2;
   static const double k2 = 0.24;
 
-  _VRDistortionPainter({required this.image, required this.shader});
+  _VRDistortionPainter({
+    required this.image,
+    required this.shader,
+    required this.offsetX,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -263,6 +270,7 @@ class _VRDistortionPainter extends CustomPainter {
     shader.setImageSampler(0, image); // uTexture
     shader.setFloat(2, k1); // uK1
     shader.setFloat(3, k2); // uK2
+    shader.setFloat(4, offsetX); // uOffsetX
 
     // Draw using GPU shader
     final paint = Paint()..shader = shader;
