@@ -28,6 +28,7 @@ dependencies:
   shelf: ^1.4.1
   gamepads: ^0.1.9
   image: ^4.0.0
+  tflite_flutter: ^0.12.1
 
 dev_dependencies:
   flutter_test:
@@ -38,5 +39,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/hyg_stars.db
+    - assets/models/
   shaders:
     - shaders/vr_distortion.frag

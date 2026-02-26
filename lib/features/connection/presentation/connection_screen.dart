@@ -48,7 +48,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                         onPressed: isConnected
                             ? null
                             : () {
-                                telescopeProvider.connect("192.168.1.37");
+                                telescopeProvider.connect("10.14.214.56");
                               },
                         icon: const Icon(Icons.wifi),
                         label: const Text('Connect WebSocket'),

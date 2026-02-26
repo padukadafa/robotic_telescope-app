@@ -38,25 +38,25 @@ class _TelescopeControlScreenState extends State<TelescopeControlScreen> {
       if (event.type == KeyType.analog) {
         final now = DateTime.now();
 
-        if (event.key == "AXIS_HAT_X" && event.value == -1.0) {
+        if (event.key == "AXIS_HAT_Y" && event.value == -1.0) {
           // Left
           _lastCommand = 'left';
           _lastMovementTime = now;
           context.read<TelescopeProvider>().slewLeft();
           _startAutoStopTimer();
-        } else if (event.key == "AXIS_HAT_X" && event.value == 1.0) {
+        } else if (event.key == "AXIS_HAT_Y" && event.value == 1.0) {
           // Right
           _lastCommand = 'right';
           _lastMovementTime = now;
           context.read<TelescopeProvider>().slewRight();
           _startAutoStopTimer();
-        } else if (event.key == "AXIS_HAT_Y" && event.value == -1.0) {
+        } else if (event.key == "AXIS_HAT_X" && event.value == -1.0) {
           // Up
           _lastCommand = 'up';
           _lastMovementTime = now;
           context.read<TelescopeProvider>().slewUp();
           _startAutoStopTimer();
-        } else if (event.key == "AXIS_HAT_Y" && event.value == 1.0) {
+        } else if (event.key == "AXIS_HAT_X" && event.value == 1.0) {
           // Down
           _lastCommand = 'down';
           _lastMovementTime = now;

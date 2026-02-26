@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:robotic_telescope/core/providers/telescope_provider.dart';
+// import 'package:robotic_telescope/core/providers/detection_provider.dart'; // TFLite ML - DISABLED
+import 'package:robotic_telescope/core/providers/astronomical_detection_provider.dart';
 import 'package:robotic_telescope/core/widgets/wrapper.dart';
 import 'package:robotic_telescope/features/object_selection/provider/object_selection_provider.dart';
 import 'package:robotic_telescope/core/di/service_locator.dart';
@@ -21,6 +23,8 @@ class MainApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => TelescopeProvider()),
         ChangeNotifierProvider(create: (_) => ObjectSelectionProvider()),
+        // ChangeNotifierProvider(create: (_) => DetectionProvider()), // TFLite ML detection - DISABLED
+        ChangeNotifierProvider(create: (_) => AstronomicalDetectionProvider()),
       ],
       child: MaterialApp(
         title: 'Robotic Telescope Control',

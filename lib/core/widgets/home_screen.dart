@@ -3,6 +3,8 @@ import 'package:robotic_telescope/features/object_selection/presentation/object_
 import 'package:robotic_telescope/features/telescope_control/presentation/telescope_control_screen.dart';
 import 'package:robotic_telescope/features/monitoring/presentation/monitoring_screen.dart';
 import 'package:robotic_telescope/features/settings/settings_screen.dart';
+// import 'package:robotic_telescope/features/ai_detection/ai_detection_screen.dart'; // TFLite ML - DISABLED
+import 'package:robotic_telescope/features/ai_detection/astronomical_detection_example_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,18 +20,40 @@ class _HomeScreenState extends State<HomeScreen> {
     const ObjectSelectionScreen(),
     const TelescopeControlScreen(),
     const MonitoringScreen(),
+    const AstronomicalDetectionScreen(), // Bright point detection only (no ML)
   ];
 
-  final List<String> _titles = ['Objects', 'Control', 'Monitoring'];
+  final List<String> _titles = [
+    'Objects',
+    'Control',
+    'Monitoring',
+    'Deteksi Titik', // Bright point detection
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Pastikan index valid saat initialization
+    if (_selectedIndex >= _screens.length) {
+      _selectedIndex = 0;
+    }
+  }
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index >= 0 && index < _screens.length) {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Safety check untuk memastikan index valid
+    if (_selectedIndex >= _screens.length) {
+      _selectedIndex = 0;
+    }
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -115,6 +139,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icon(Icons.monitor),
                 activeIcon: Icon(Icons.monitor, size: 28),
                 label: 'Monitor',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.camera_alt),
+                activeIcon: Icon(Icons.camera_alt, size: 28),
+                label: 'AI Detect',
               ),
             ],
           ),
